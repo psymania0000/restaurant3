@@ -1,11 +1,17 @@
 package com.restaurant.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.restaurant.model.Role;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ReviewDto {
     private Long id;
     private Long restaurantId;

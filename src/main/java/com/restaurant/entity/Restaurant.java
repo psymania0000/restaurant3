@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "restaurants")
@@ -35,6 +36,11 @@ public class Restaurant {
     // 예약 관련 필드 추가
     private int maxCapacity; // 최대 수용 인원
     private String businessHours; // 영업 시간 정보 (예: "월-금 10:00-22:00")
+    private Integer reservationInterval; // 예약 간격 (분 단위)
+
+    @OneToOne
+    @JoinColumn(name = "manager_id")
+    private User manager; // 레스토랑 매니저 (User 엔티티와의 관계)
 
     // TODO: Add other relevant fields like operating hours, category, etc.
 

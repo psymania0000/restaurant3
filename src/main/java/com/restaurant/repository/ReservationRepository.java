@@ -1,8 +1,8 @@
 package com.restaurant.repository;
 
 import com.restaurant.entity.Reservation;
-import com.restaurant.entity.User;
 import com.restaurant.entity.Restaurant;
+import com.restaurant.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.time.LocalDateTime;
 import java.util.List;
