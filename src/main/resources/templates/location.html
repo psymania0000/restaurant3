@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>영이식당 위치 안내</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        #map {
+            width: 100%;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+        .location-info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">영이식당 위치 안내</h1>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div id="map"></div>
+            </div>
+            <div class="col-md-4">
+                <div class="location-info">
+                    <h3>영이식당</h3>
+                    <p><strong>주소:</strong> 부산 동구 충장대로 287-2</p>
+                    <p><strong>카테고리:</strong> 한식</p>
+                    <p><strong>대중교통:</strong></p>
+                    <ul>
+                        <li>지하철: 1호선 동래역 3번 출구에서 도보 5분</li>
+                        <li>버스: 동래역 정류장 하차</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
+    <script>
+        function initMap() {
+            const restaurantLocation = { lat: 35.2055, lng: 129.0787 }; // 영이식당 위치 좌표
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 15,
+                center: restaurantLocation,
+            });
+            
+            const marker = new google.maps.Marker({
+                position: restaurantLocation,
+                map: map,
+                title: "영이식당"
+            });
+
+            const infoWindow = new google.maps.InfoWindow({
+                content: "<div><h3>영이식당</h3><p>부산 동구 충장대로 287-2</p></div>"
+            });
+
+            marker.addListener("click", () => {
+                infoWindow.open(map, marker);
+            });
+        }
+
+        window.onload = initMap;
+    </script>
+</body>
+</html> 

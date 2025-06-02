@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예약 관리</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
+
+        <h2>예약 관리</h2>
+
+        <!-- 예약 상태 필터 -->
+        <div class="mb-4">
+            <div class="btn-group" role="group">
+                <a th:href="@{/manager/reservations(status='PENDING')}" 
+                   class="btn" th:classappend="${status == 'PENDING' ? 'btn-primary' : 'btn-outline-primary'}">
+                    대기중
+                </a>
+                <a th:href="@{/manager/reservations(status='CONFIRMED')}" 
+                   class="btn" th:classappend="${status == 'CONFIRMED' ? 'btn-primary' : 'btn-outline-primary'}">
+                    승인됨
+                </a>
+                <a th:href="@{/manager/reservations(status='CANCELLED')}" 
+                   class="btn" th:classappend="${status == 'CANCELLED' ? 'btn-primary' : 'btn-outline-primary'}">
+                    취소됨
+                </a>
+                <a th:href="@{/manager/reservations}" 
+                   class="btn" th:classappend="${status == null ? 'btn-primary' : 'btn-outline-primary'}">
+                    전체
+                </a>
+            </div>
+        </div>
+
+        <!-- 예약 목록 -->
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>예약 번호</th>
+                        <th>예약자</th>
+                        <th>인원</th>
+                        <th>예약 시간</th>
+                        <th>요청사항</th>
+                        <th>상태</th>
+                        <th>작업</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="reservation : ${reservations}">
+                        <td th:text="${reservation.id}">1</td>
+                        <td th:text="${reservation.userName}">홍길동</td>
+                        <td th:text="${reservation.numberOfPeople}">2</td>
+                        <td th:text="${#temporals.format(reservation.reservationTime, 'yyyy-MM-dd HH:mm')}">2024-03-20 19:00</td>
+                        <td th:text="${reservation.requests}">창가 자리 요청</td>
+                        <td>
+                            <span th:class="${'badge ' + 
+                                (reservation.status == 'PENDING' ? 'bg-warning' : 
+                                (reservation.status == 'CONFIRMED' ? 'bg-success' : 'bg-danger'))}"
+                                  th:text="${reservation.status == 'PENDING' ? '대기중' : 
+                                          (reservation.status == 'CONFIRMED' ? '승인됨' : '취소됨')}">
+                                상태
+                            </span>
+                        </td>
+                        <td>
+                            <div th:if="${reservation.status == 'PENDING'}" class="btn-group">
+                                <form th:action="@{/manager/reservations/{id}/confirm(id=${reservation.id})}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-success">승인</button>
+                                </form>
+                                <form th:action="@{/manager/reservations/{id}/cancel(id=${reservation.id})}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger">거절</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-3">
+            <a th:href="@{/manager/restaurant}" class="btn btn-secondary">대시보드로 돌아가기</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

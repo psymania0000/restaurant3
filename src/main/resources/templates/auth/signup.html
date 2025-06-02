@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>회원가입</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>회원가입</h2>
+        <form th:action="@{/api/auth/signup}" method="post" th:object="${signupRequest}">
+            <div class="form-group">
+                <label for="name">이름</label>
+                <input type="text" id="name" name="name" th:field="*{name}" required>
+                <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="phoneNumber">전화번호</label>
+                <input type="tel" id="phoneNumber" name="phoneNumber" th:field="*{phoneNumber}" 
+                       placeholder="010-0000-0000" required>
+                <span th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="password">비밀번호</label>
+                <input type="password" id="password" name="password" th:field="*{password}" required>
+                <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+            </div>
+
+            <button type="submit">가입하기</button>
+        </form>
+        <p>이미 계정이 있으신가요? <a th:href="@{/login}">로그인</a></p>
+    </div>
+</body>
+</html> 

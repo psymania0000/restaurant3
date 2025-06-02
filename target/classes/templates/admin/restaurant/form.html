@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${restaurant.id == null ? '새 식당 추가' : '식당 수정'} + ' - 관리자'">식당 추가/수정 - 관리자</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 20px;
+        }
+        .container {
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 th:text="${restaurant.id == null ? '새 식당 추가' : '식당 수정'}" class="mb-4">식당 추가/수정</h2>
+
+        <form th:action="${restaurant.id == null ? '/admin/restaurants' : '/admin/restaurants/' + restaurant.id}" th:object="${restaurant}" method="post" enctype="multipart/form-data">
+            <input type="hidden" th:field="*{id}" />
+
+            <div class="mb-3">
+                <label for="name" class="form-label">식당 이름</label>
+                <input type="text" class="form-control" id="name" th:field="*{name}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="address" class="form-label">주소</label>
+                <input type="text" class="form-control" id="address" th:field="*{address}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="phone" class="form-label">전화번호</label>
+                <input type="tel" class="form-control" id="phone" th:field="*{phone}">
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">설명</label>
+                <textarea class="form-control" id="description" th:field="*{description}" rows="3"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="imageFile" class="form-label">식당 이미지</label>
+                <input type="file" class="form-control" id="imageFile" name="imageFile" accept="image/*">
+                <div th:if="${restaurant.imageUrl}" class="mt-2">
+                    <p>현재 이미지:</p>
+                    <img th:src="${restaurant.imageUrl}" alt="현재 식당 이미지" style="width: 100px; height: auto;">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" th:text="${restaurant.id == null ? '추가' : '수정'}">저장</button>
+            <a href="/admin/restaurants" class="btn btn-secondary">취소</a>
+        </form>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
