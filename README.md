@@ -1,76 +1,56 @@
-# Restaurant Reservation System
+# Restaurant Management System
 
-레스토랑 예약 시스템은 사용자가 레스토랑을 검색하고, 메뉴를 확인하며, 예약을 할 수 있는 웹 애플리케이션입니다.
+A Spring Boot-based restaurant management system that provides features for managing restaurant operations, reservations, and user management.
 
-## 주요 기능
+## Features
 
-- 사용자 관리 (회원가입, 로그인, 프로필 관리)
-- 레스토랑 검색 및 상세 정보 조회
-- 메뉴 관리 및 조회
-- 예약 시스템
-- 리뷰 시스템
-- 관리자 기능 (레스토랑 관리, 사용자 관리)
+- User authentication and authorization
+- Restaurant menu management
+- Table reservation system
+- Point system for customers
+- Admin dashboard for restaurant management
 
-## 기술 스택
+## Tech Stack
 
-- Backend: Spring Boot
-- Frontend: Thymeleaf, Bootstrap 5
-- Database: MariaDB
-- Security: Spring Security, JWT
-- Build Tool: Maven
+- Java 17
+- Spring Boot 3.x
+- Spring Security
+- Spring Data JPA
+- MariaDB
+- Thymeleaf
+- Bootstrap 5
 
-## 시작하기
+## Prerequisites
 
-### 필수 조건
-
-- Java 17 이상
+- Java 17 or higher
 - Maven
 - MariaDB
 
-### 설치 및 실행
+## Setup
 
-1. 저장소 클론
+1. Clone the repository:
 ```bash
-git clone [repository-url]
-cd restaurant
+git clone https://github.com/psymania0000/restaurant.git
 ```
 
-2. 데이터베이스 설정
-- MariaDB 설치 및 실행
-- 데이터베이스 생성: `restaurant`
-- 사용자 생성: `webuser` / 비밀번호: `webuser`
+2. Configure the database:
+- Create a MariaDB database named `restaurant_db`
+- Update the database credentials in `src/main/resources/application.yml`
 
-3. 애플리케이션 실행
+3. Build and run the application:
 ```bash
+mvn clean install
 mvn spring-boot:run
 ```
 
-4. 웹 브라우저에서 접속
-```
-http://localhost:8080
-```
+4. Access the application:
+- Open your browser and navigate to `http://localhost:8080`
 
-## 프로젝트 구조
+## Default Admin Account
 
-```
-src/main/java/com/restaurant/
-├── config/         # 설정 파일
-├── controller/     # 컨트롤러
-├── dto/           # 데이터 전송 객체
-├── entity/        # 엔티티
-├── repository/    # 리포지토리
-├── service/       # 서비스
-└── security/      # 보안 관련
-```
+- Username: admin
+- Password: admin123
 
-## API 문서
+## License
 
-- 메인 페이지: `/`
-- 로그인: `/login`
-- 회원가입: `/signup`
-- 레스토랑 목록: `/restaurants`
-- 예약: `/restaurants/{id}/reserve`
-
-## 라이선스
-
-이 프로젝트는 MIT 라이선스를 따릅니다. 
+This project is licensed under the MIT License. 

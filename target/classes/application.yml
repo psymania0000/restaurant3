@@ -22,9 +22,4 @@ spring:
 # JWT Configuration
 jwt:
   secret: restaurantSecretKey
-  expiration: 86400000 # 24 hours
-
-# SMS Configuration (to be implemented)
-sms:
-  api-key: your-sms-api-key
-  sender-number: your-sender-number 
+  expiration: 86400000 # 24 hours 

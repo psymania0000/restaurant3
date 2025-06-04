@@ -111,15 +111,6 @@ public class UserService {
         return convertToDto(user);
     }
 
-    // TODO: Add methods for login, user info management, etc.
-
-    // 임시 메서드 - verifyPhone 기능 구현 필요
-    public boolean verifyPhone(String phoneNumber) {
-        // 실제 전화번호 인증 로직 구현
-        return true; // 임시로 true 반환
-    }
-
-    // 임시 메서드 - addPoints 기능 구현 필요
     @Transactional
     public void addPoints(Long userId, int points) {
         User user = userRepository.findById(userId)
@@ -128,15 +119,10 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public User getUserByPhoneNumber(String phoneNumber) {
-        return userRepository.findByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-    }
-
     @Transactional(readOnly = true)
     public UserDto login(LoginRequest loginRequest) {
-        User user = userRepository.findByPhoneNumber(loginRequest.getPhoneNumber())
-                .orElseThrow(() -> new RuntimeException("등록되지 않은 전화번호입니다."));
+        User user = userRepository.findByUsername(loginRequest.getUsername())
+                .orElseThrow(() -> new RuntimeException("등록되지 않은 아이디입니다."));
 
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new RuntimeException("비밀번호가 일치하지 않습니다.");
