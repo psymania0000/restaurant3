@@ -48,32 +48,43 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         return userRepository.save(user);
     }
 
+    @SuppressWarnings("unchecked")
     private String getEmail(String provider, Map<String, Object> attributes) {
         if ("google".equals(provider)) {
             return (String) attributes.get("email");
         } else if ("kakao".equals(provider)) {
             Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-            return (String) kakaoAccount.get("email");
+            if (kakaoAccount != null) {
+                return (String) kakaoAccount.get("email");
+            }
         } else if ("naver".equals(provider)) {
             Map<String, Object> response = (Map<String, Object>) attributes.get("response");
-            return (String) response.get("email");
+            if (response != null) {
+                return (String) response.get("email");
+            }
         }
-        throw new OAuth2AuthenticationException("Unsupported provider: " + provider);
+        throw new OAuth2AuthenticationException("Unsupported provider or missing email: " + provider);
     }
 
+    @SuppressWarnings("unchecked")
     private String getName(String provider, Map<String, Object> attributes) {
         if ("google".equals(provider)) {
             return (String) attributes.get("name");
         } else if ("kakao".equals(provider)) {
             Map<String, Object> properties = (Map<String, Object>) attributes.get("properties");
-            return (String) properties.get("nickname");
+            if (properties != null) {
+                return (String) properties.get("nickname");
+            }
         } else if ("naver".equals(provider)) {
             Map<String, Object> response = (Map<String, Object>) attributes.get("response");
-            return (String) response.get("name");
+            if (response != null) {
+                return (String) response.get("name");
+            }
         }
-        throw new OAuth2AuthenticationException("Unsupported provider: " + provider);
+        throw new OAuth2AuthenticationException("Unsupported provider or missing name: " + provider);
     }
 
+    @SuppressWarnings("unchecked")
     private String getProviderId(String provider, Map<String, Object> attributes) {
         if ("google".equals(provider)) {
             return (String) attributes.get("sub");
@@ -81,8 +92,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             return String.valueOf(attributes.get("id"));
         } else if ("naver".equals(provider)) {
             Map<String, Object> response = (Map<String, Object>) attributes.get("response");
-            return (String) response.get("id");
+            if (response != null) {
+                return (String) response.get("id");
+            }
         }
-        throw new OAuth2AuthenticationException("Unsupported provider: " + provider);
+        throw new OAuth2AuthenticationException("Unsupported provider or missing id: " + provider);
     }
 } 

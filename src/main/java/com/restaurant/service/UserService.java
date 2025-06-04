@@ -3,7 +3,7 @@ package com.restaurant.service;
 import com.restaurant.dto.LoginRequest;
 import com.restaurant.dto.SignupRequest;
 import com.restaurant.dto.UserDto;
-import com.restaurant.model.User;
+import com.restaurant.entity.User;
 import com.restaurant.model.Role;
 import com.restaurant.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,13 +29,13 @@ public class UserService {
             throw new RuntimeException("이미 등록된 전화번호입니다.");
         }
 
-        User user = User.builder()
-                .name(request.getName())
-                .phoneNumber(request.getPhoneNumber())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER)
-                .points(100) // 가입 시 기본 포인트 지급
-                .build();
+        User user = new User();
+        user.setName(request.getName());
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole("ROLE_USER"); // Role enum 대신 문자열 사용
+        user.setPoints(100); // 가입 시 기본 포인트 지급
+        user.setCreatedAt(LocalDateTime.now());
 
         return userRepository.save(user);
     }
@@ -83,14 +83,14 @@ public class UserService {
 
     // 사용자 역할 업데이트 메서드 추가
     @Transactional
-    public void updateUserRole(Long userId, Role role) {
+    public void updateUserRole(Long userId, String role) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with ID " + userId + " not found."));
         user.setRole(role);
         userRepository.save(user);
     }
 
-    // User 엔티티를 UserDto로 변환하는 메소드 (필요하다면 추가 또는 수정)
+    // User 엔티티를 UserDto로 변환하는 메소드
     private UserDto convertToDto(User user) {
         return UserDto.builder()
                 .id(user.getId())

@@ -23,9 +23,8 @@ public class ReviewController {
         
         if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof com.restaurant.entity.User) {
             com.restaurant.entity.User currentUser = (com.restaurant.entity.User) authentication.getPrincipal();
-            reviewDto.setUserId(currentUser.getId());
             try {
-                reviewService.createReview(reviewDto);
+                reviewService.createReview(reviewDto, currentUser.getId());
                 redirectAttributes.addFlashAttribute("successMessage", "후기가 성공적으로 작성되었습니다.");
             } catch (Exception e) {
                 redirectAttributes.addFlashAttribute("errorMessage", "후기 작성 중 오류가 발생했습니다: " + e.getMessage());

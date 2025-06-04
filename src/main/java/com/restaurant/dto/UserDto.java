@@ -1,6 +1,5 @@
 package com.restaurant.dto;
 
-import com.restaurant.model.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +13,6 @@ public class UserDto {
     private Long id;
     private String name;
     private String phoneNumber;
-    private Role role;
+    private String role;
     private int points;
 } 

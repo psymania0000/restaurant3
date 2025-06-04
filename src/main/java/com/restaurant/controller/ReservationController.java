@@ -44,8 +44,8 @@ public class ReservationController {
         LocalDateTime today = LocalDateTime.now();
         int defaultPartySize = 1; // 또는 사용자가 입력한 값
 
-        // TODO: 사용 가능한 시간을 가져올 때 사용자 입력 값 (날짜, 인원)을 사용하도록 수정
-        List<LocalDateTime> availableTimes = reservationService.getAvailableReservationTimes(restaurantId, today, defaultPartySize);
+        // 사용 가능한 시간을 가져옵니다
+        List<LocalDateTime> availableTimes = reservationService.getAvailableReservationTimes(restaurantId);
         model.addAttribute("availableTimes", availableTimes);
 
         ReservationDto reservationDto = new ReservationDto();
@@ -72,7 +72,7 @@ public class ReservationController {
             reservationDto.setUserId(user.getId());
             reservationDto.setRestaurantId(restaurantId);
 
-            reservationService.createReservation(reservationDto);
+            reservationService.createReservation(reservationDto, user.getId());
 
             redirectAttributes.addFlashAttribute("successMessage", "예약 요청이 완료되었습니다.");
             return "redirect:/mypage/reservations"; // 사용자 마이페이지 예약 목록으로 리다이렉트

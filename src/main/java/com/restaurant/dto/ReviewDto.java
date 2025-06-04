@@ -1,6 +1,5 @@
 package com.restaurant.dto;
 
-import com.restaurant.model.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

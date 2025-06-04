@@ -1,6 +1,6 @@
 package com.restaurant.entity;
 
-import com.restaurant.model.User;
+import com.restaurant.entity.User;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
@@ -42,6 +42,9 @@ public class Reservation {
 
     @Column(nullable = false)
     private Integer pointsUsed;
+
+    @Column(length = 500)
+    private String request; // 예약 요청사항
 
     @CreatedDate
     @Column(nullable = false, updatable = false)

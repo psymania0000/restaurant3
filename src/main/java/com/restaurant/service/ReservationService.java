@@ -3,7 +3,7 @@ package com.restaurant.service;
 import com.restaurant.dto.ReservationDto;
 import com.restaurant.entity.Reservation;
 import com.restaurant.entity.Restaurant;
-import com.restaurant.model.User;
+import com.restaurant.entity.User;
 import com.restaurant.repository.ReservationRepository;
 import com.restaurant.repository.RestaurantRepository;
 import com.restaurant.repository.UserRepository;
@@ -153,7 +153,6 @@ public class ReservationService {
         return updateReservationStatus(reservationId, "취소됨");
     }
 
-
     // Reservation 엔티티를 ReservationDto로 변환
     private ReservationDto convertToDto(Reservation reservation) {
         return ReservationDto.builder()
@@ -185,4 +184,12 @@ public class ReservationService {
          }
          return availableTimes;
      }
+
+    // 레스토랑의 모든 예약 목록 조회
+    @Transactional(readOnly = true)
+    public List<ReservationDto> getReservationsByRestaurantId(Long restaurantId) {
+        return reservationRepository.findByRestaurantId(restaurantId).stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
 }

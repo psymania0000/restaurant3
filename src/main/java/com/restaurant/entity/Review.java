@@ -1,6 +1,5 @@
 package com.restaurant.entity;
 
-import com.restaurant.model.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
