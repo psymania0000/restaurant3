@@ -9,7 +9,7 @@
     <!-- Custom CSS -->
     <style>
         .hero-section {
-            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/restaurant-bg.jpg');
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/map-location.jpg');
             background-size: cover;
             background-position: center;
             height: 500px;
@@ -44,14 +44,40 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#about">소개</a>
                     </li>
+                    <!-- 관리자 메뉴 -->
+                    <li class="nav-item" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+                        <a class="nav-link" href="/admin">관리자 페이지</a>
+                    </li>
                 </ul>
                 <div class="d-flex">
-                    <a href="/login" class="btn btn-outline-light me-2">로그인</a>
-                    <a href="/signup" class="btn btn-primary">회원가입</a>
+                    <!-- 로그인하지 않은 경우 -->
+                    <div th:if="${!#authorization.expression('isAuthenticated()')}">
+                        <a href="/login" class="btn btn-outline-light me-2">로그인</a>
+                        <a href="/signup" class="btn btn-primary">회원가입</a>
+                    </div>
+                    <!-- 로그인한 경우 -->
+                    <div th:if="${#authorization.expression('isAuthenticated()')}" class="d-flex align-items-center">
+                        <span class="text-light me-3" th:text="${#authentication.name}">사용자</span>
+                        <form th:action="@{/logout}" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-outline-light">로그아웃</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </nav>
+
+    <!-- Alert Messages -->
+    <div class="container mt-3">
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
 
     <!-- Hero Section -->
     <section class="hero-section">

@@ -1,9 +1,10 @@
 package com.restaurant.service;
 
-import com.restaurant.dto.ReservationDto;
+import com.restaurant.dto.ReservationDTO;
 import com.restaurant.entity.Reservation;
 import com.restaurant.entity.Restaurant;
 import com.restaurant.entity.User;
+import com.restaurant.model.ReservationStatus;
 import com.restaurant.repository.ReservationRepository;
 import com.restaurant.repository.RestaurantRepository;
 import com.restaurant.repository.UserRepository;
@@ -23,22 +24,23 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
     private final RestaurantRepository restaurantRepository;
+    private final NotificationService notificationService;
 
     // 예약 생성
     @Transactional
-    public ReservationDto createReservation(ReservationDto reservationDto, Long userId) {
+    public ReservationDTO createReservation(ReservationDTO reservationDTO, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
-        Restaurant restaurant = restaurantRepository.findById(reservationDto.getRestaurantId())
-                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found with id: " + reservationDto.getRestaurantId()));
+        Restaurant restaurant = restaurantRepository.findById(reservationDTO.getRestaurantId())
+                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found with id: " + reservationDTO.getRestaurantId()));
 
         // 예약 가능 여부 확인
-        if (!isReservationAvailable(reservationDto.getRestaurantId(), reservationDto.getReservationTime(), reservationDto.getNumberOfPeople())) {
+        if (!isReservationAvailable(reservationDTO.getRestaurantId(), reservationDTO.getReservationTime(), reservationDTO.getNumberOfPeople())) {
             throw new RuntimeException("예약 가능한 시간이 아닙니다.");
         }
 
         // 포인트 사용 로직 (선택 사항)
-        int pointsToUse = reservationDto.getPointsToUse() != null ? reservationDto.getPointsToUse() : 0;
+        int pointsToUse = reservationDTO.getPointsToUse() != null ? reservationDTO.getPointsToUse() : 0;
         if (pointsToUse > user.getPoints()) {
             throw new RuntimeException("보유 포인트가 부족합니다.");
         }
@@ -46,10 +48,10 @@ public class ReservationService {
         Reservation reservation = new Reservation();
         reservation.setUser(user);
         reservation.setRestaurant(restaurant);
-        reservation.setNumberOfPeople(reservationDto.getNumberOfPeople());
-        reservation.setReservationTime(reservationDto.getReservationTime());
-        reservation.setRequest(reservationDto.getRequest());
-        reservation.setStatus("대기"); // 초기 상태 대기
+        reservation.setNumberOfPeople(reservationDTO.getNumberOfPeople());
+        reservation.setReservationTime(reservationDTO.getReservationTime());
+        reservation.setRequest(reservationDTO.getRequest());
+        reservation.setStatus(ReservationStatus.PENDING);
         reservation.setPointsUsed(pointsToUse);
 
         user.setPoints(user.getPoints() - pointsToUse); // 포인트 차감
@@ -57,7 +59,7 @@ public class ReservationService {
 
         Reservation savedReservation = reservationRepository.save(reservation);
 
-        return convertToDto(savedReservation);
+        return convertToDTO(savedReservation);
     }
 
     // 예약 가능 여부 확인
@@ -89,33 +91,33 @@ public class ReservationService {
 
     // 사용자의 예약 목록 조회
     @Transactional(readOnly = true)
-    public List<ReservationDto> getUserReservations(Long userId) {
+    public List<ReservationDTO> getUserReservations(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
         return reservationRepository.findByUser(user).stream()
-                .map(this::convertToDto)
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     // 레스토랑 관리자를 위한 예약 목록 조회 (상태별 필터링)
     @Transactional(readOnly = true)
-    public List<ReservationDto> getReservationsByRestaurantIdAndStatus(Long restaurantId, String status) {
+    public List<ReservationDTO> getReservationsByRestaurantIdAndStatus(Long restaurantId, ReservationStatus status) {
          return reservationRepository.findByRestaurantIdAndStatus(restaurantId, status).stream()
-                .map(this::convertToDto)
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     // 특정 예약 상세 정보 조회
     @Transactional(readOnly = true)
-    public ReservationDto getReservationById(Long reservationId) {
+    public ReservationDTO getReservationById(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new EntityNotFoundException("Reservation not found with id: " + reservationId));
-        return convertToDto(reservation);
+        return convertToDTO(reservation);
     }
 
     // 예약 상태 업데이트 (예: 승인, 취소)
     @Transactional
-    public ReservationDto updateReservationStatus(Long reservationId, String status) {
+    public ReservationDTO updateReservationStatus(Long reservationId, ReservationStatus status) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new EntityNotFoundException("Reservation not found with id: " + reservationId));
 
@@ -123,23 +125,23 @@ public class ReservationService {
         // TODO: 상태 변경에 따른 추가 로직 (예: 취소 시 포인트 환불)
 
         Reservation updatedReservation = reservationRepository.save(reservation);
-        return convertToDto(updatedReservation);
+        return convertToDTO(updatedReservation);
     }
 
      // 예약 승인
     @Transactional
-    public ReservationDto confirmReservation(Long reservationId) {
-        return updateReservationStatus(reservationId, "승인됨");
+    public ReservationDTO confirmReservation(Long reservationId) {
+        return updateReservationStatus(reservationId, ReservationStatus.APPROVED);
     }
 
     // 예약 취소
     @Transactional
-    public ReservationDto cancelReservation(Long reservationId) {
+    public ReservationDTO cancelReservation(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new EntityNotFoundException("Reservation not found with id: " + reservationId));
 
         // 이미 취소된 예약은 다시 취소할 수 없음
-        if ("취소됨".equals(reservation.getStatus())) {
+        if (ReservationStatus.CANCELLED.equals(reservation.getStatus())) {
             throw new RuntimeException("이미 취소된 예약입니다.");
         }
 
@@ -150,12 +152,12 @@ public class ReservationService {
             userRepository.save(user);
         }
 
-        return updateReservationStatus(reservationId, "취소됨");
+        return updateReservationStatus(reservationId, ReservationStatus.CANCELLED);
     }
 
-    // Reservation 엔티티를 ReservationDto로 변환
-    private ReservationDto convertToDto(Reservation reservation) {
-        return ReservationDto.builder()
+    // Reservation 엔티티를 ReservationDTO로 변환
+    private ReservationDTO convertToDTO(Reservation reservation) {
+        return ReservationDTO.builder()
                 .id(reservation.getId())
                 .userId(reservation.getUser().getId())
                 .userName(reservation.getUser().getName())
@@ -187,9 +189,21 @@ public class ReservationService {
 
     // 레스토랑의 모든 예약 목록 조회
     @Transactional(readOnly = true)
-    public List<ReservationDto> getReservationsByRestaurantId(Long restaurantId) {
+    public List<ReservationDTO> getReservationsByRestaurantId(Long restaurantId) {
         return reservationRepository.findByRestaurantId(restaurantId).stream()
-                .map(this::convertToDto)
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReservationDTO> getReservationsByStatus(ReservationStatus status) {
+        return reservationRepository.findByStatus(status).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public long getReservationCount() {
+        return reservationRepository.count();
     }
 }

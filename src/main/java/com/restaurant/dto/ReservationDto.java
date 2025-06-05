@@ -1,25 +1,28 @@
 package com.restaurant.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-
+import com.restaurant.model.ReservationStatus;
 import java.time.LocalDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReservationDto {
+public class ReservationDTO {
     private Long id;
     private Long userId;
-    private String userName;
     private Long restaurantId;
-    private String restaurantName;
-    private Integer numberOfPeople;
     private LocalDateTime reservationTime;
-    private String request;
-    private String status;
+    private Integer numberOfPeople;
+    private ReservationStatus status;
+    private String specialRequests;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private String userName;
+    private String restaurantName;
     private Integer pointsToUse;
-} 
+    private String request;
+}

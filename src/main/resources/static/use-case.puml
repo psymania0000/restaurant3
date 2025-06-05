@@ -1,0 +1,128 @@
+@startuml Restaurant Management System
+
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor LightBlue
+    BorderColor DarkBlue
+    ArrowColor DarkBlue
+}
+skinparam linetype ortho
+
+' 액터 정의 (세로로 배치)
+actor Customer as "일반 회원" #LightGreen
+actor Manager as "레스토랑 관리자" #LightYellow
+actor Admin as "시스템 관리자" #LightPink
+
+' 액터 간 세로 관계 (숨김)
+Customer -[hidden]d- Manager
+Manager -[hidden]d- Admin
+
+' 시스템 영역을 together로 묶어 세로 배치 강제
+together {
+    rectangle "레스토랑 예약 시스템" {
+        ' 기능 패키지 세로 배치 및 유스케이스 정의
+        package "회원 관리" as 회원관리 {
+            usecase "회원가입" as UC1
+            usecase "로그인" as UC2
+            usecase "로그아웃" as UC3
+            usecase "회원 정보 수정" as UC4
+            usecase "회원 탈퇴" as UC5
+            usecase "회원 잠금/해제" as UC6
+        }
+
+        package "예약 관리" as 예약관리 {
+            usecase "예약 신청" as UC7
+            usecase "예약 목록 조회" as UC8
+            usecase "예약 상세 조회" as UC9
+            usecase "예약 취소" as UC10
+            usecase "예약 승인" as UC11
+            usecase "예약 거부" as UC12
+            usecase "예약 알림 확인" as UC13
+        }
+
+        package "리뷰 관리" as 리뷰관리 {
+            usecase "리뷰 작성" as UC20
+            usecase "리뷰 목록 조회" as UC21
+            usecase "리뷰 상세 조회" as UC24
+            usecase "리뷰 수정" as UC22
+            usecase "리뷰 삭제" as UC23
+        }
+        
+        package "메뉴 관리" as 메뉴관리 {
+            usecase "메뉴 목록 조회" as UC14
+            usecase "메뉴 상세 조회" as UC15
+            usecase "메뉴 등록" as UC16
+            usecase "메뉴 수정" as UC17
+            usecase "메뉴 삭제" as UC18
+        } 
+        
+        package "포인트 관리" as 포인트관리 {
+            usecase "포인트 적립" as UC25
+            usecase "포인트 사용" as UC26
+            usecase "포인트 내역 조회" as UC27
+        }
+        
+        ' 패키지 간 세로 연결 (명시적)
+        회원관리 -down-> 예약관리
+        예약관리 -down-> 리뷰관리
+        리뷰관리 -down-> 메뉴관리
+        메뉴관리 -down-> 포인트관리
+    }
+}
+
+' 액터와 패키지 연결
+Customer -right-> 회원관리
+Customer -right-> 예약관리
+Customer -right-> 리뷰관리
+Customer -right-> 메뉴관리
+Customer -right-> 포인트관리
+
+Manager -right-> 예약관리
+Manager -right-> 메뉴관리
+Manager -right-> 리뷰관리
+
+Admin -right-> 회원관리
+Admin -right-> 예약관리
+Admin -right-> 메뉴관리
+Admin -right-> 리뷰관리
+Admin -right-> 포인트관리
+
+' Include Relationships
+UC7 ..> UC2 : <<include>>
+UC8 ..> UC2 : <<include>>
+UC9 ..> UC2 : <<include>>
+UC10 ..> UC2 : <<include>>
+UC11 ..> UC2 : <<include>>
+UC12 ..> UC2 : <<include>>
+UC13 ..> UC2 : <<include>>
+UC14 ..> UC2 : <<include>>
+UC15 ..> UC2 : <<include>>
+UC16 ..> UC2 : <<include>>
+UC17 ..> UC2 : <<include>>
+UC18 ..> UC2 : <<include>>
+UC20 ..> UC2 : <<include>>
+UC21 ..> UC2 : <<include>>
+UC22 ..> UC2 : <<include>>
+UC23 ..> UC2 : <<include>>
+UC24 ..> UC2 : <<include>>
+UC25 ..> UC2 : <<include>>
+UC26 ..> UC2 : <<include>>
+UC27 ..> UC2 : <<include>>
+
+' Extend Relationships
+UC9 ..> UC8 : <<extend>>
+UC10 ..> UC9 : <<extend>>
+UC13 ..> UC11 : <<extend>>
+UC13 ..> UC12 : <<extend>>
+UC15 ..> UC14 : <<extend>>
+UC17 ..> UC16 : <<extend>>
+UC18 ..> UC16 : <<extend>>
+UC22 ..> UC21 : <<extend>>
+UC23 ..> UC21 : <<extend>>
+UC24 ..> UC21 : <<extend>>
+UC26 ..> UC25 : <<extend>>
+UC27 ..> UC25 : <<extend>>
+UC27 ..> UC26 : <<extend>>
+
+@enduml 

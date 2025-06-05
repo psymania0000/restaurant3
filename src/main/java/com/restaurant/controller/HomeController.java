@@ -22,15 +22,4 @@ public class HomeController {
         model.addAttribute("restaurants", restaurantService.getAllRestaurants());
         return "index";
     }
-    
-    @GetMapping("/login")
-    public String login() {
-        return "login";
-    }
-    
-    @GetMapping("/signup")
-    public String signupForm(Model model) {
-        // TODO: Add signupRequest model attribute if needed for displaying form errors after redirect
-        return "signup";
-    }
 } 

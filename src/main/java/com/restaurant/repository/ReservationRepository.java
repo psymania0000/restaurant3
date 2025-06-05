@@ -3,6 +3,7 @@ package com.restaurant.repository;
 import com.restaurant.entity.Reservation;
 import com.restaurant.entity.Restaurant;
 import com.restaurant.entity.User;
+import com.restaurant.model.ReservationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,11 +16,12 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findByRestaurant(Restaurant restaurant);
     List<Reservation> findByRestaurantAndReservationTimeBetween(
         Restaurant restaurant, LocalDateTime start, LocalDateTime end);
-    List<Reservation> findByUserAndStatus(User user, String status);
+    List<Reservation> findByUserAndStatus(User user, ReservationStatus status);
     List<Reservation> findByRestaurantIdAndReservationTimeBetween(Long restaurantId, LocalDateTime start, LocalDateTime end);
     List<Reservation> findByUserIdOrderByCreatedAtDesc(Long userId);
     List<Reservation> findByRestaurantIdOrderByReservationTimeAsc(Long restaurantId);
     List<Reservation> findByRestaurantId(Long restaurantId);
-    List<Reservation> findByRestaurantIdAndStatus(Long restaurantId, String status);
+    List<Reservation> findByRestaurantIdAndStatus(Long restaurantId, ReservationStatus status);
     List<Reservation> findByUserId(Long userId);
+    List<Reservation> findByStatus(ReservationStatus status);
 } 

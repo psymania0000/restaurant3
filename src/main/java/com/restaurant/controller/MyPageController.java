@@ -1,6 +1,6 @@
 package com.restaurant.controller;
 
-import com.restaurant.dto.ReservationDto;
+import com.restaurant.dto.ReservationDTO;
 import com.restaurant.service.ReservationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -19,18 +19,16 @@ public class MyPageController {
 
     private final ReservationService reservationService;
 
-    @GetMapping("/reservations")
-    public String getMyReservations(Model model) {
+    @GetMapping
+    public String myPage(Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        
         if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof com.restaurant.entity.User) {
             com.restaurant.entity.User currentUser = (com.restaurant.entity.User) authentication.getPrincipal();
-            List<ReservationDto> reservations = reservationService.getUserReservations(currentUser.getId());
+            List<ReservationDTO> reservations = reservationService.getUserReservations(currentUser.getId());
             model.addAttribute("reservations", reservations);
             model.addAttribute("user", currentUser);
-            return "mypage/reservations";
+            return "mypage/index";
         }
-        
         return "redirect:/login";
     }
 } 

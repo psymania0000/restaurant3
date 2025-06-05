@@ -1,9 +1,10 @@
 package com.restaurant.controller;
 
-import com.restaurant.dto.ReservationDto;
-import com.restaurant.dto.RestaurantDto;
+import com.restaurant.dto.ReservationDTO;
+import com.restaurant.dto.RestaurantDTO;
 import com.restaurant.service.ReservationService;
 import com.restaurant.service.RestaurantService;
+import com.restaurant.model.ReservationStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,18 +31,23 @@ public class ReservationManagerController {
             @RequestParam(required = false) String status,
             Model model) {
         
-        RestaurantDto restaurant = restaurantService.getRestaurantByManagerEmail(userDetails.getUsername());
-        List<ReservationDto> reservations;
+        RestaurantDTO restaurant = restaurantService.getRestaurantByManagerEmail(userDetails.getUsername());
+        List<ReservationDTO> reservations;
         
         if (status != null) {
-            reservations = reservationService.getReservationsByRestaurantIdAndStatus(restaurant.getId(), status);
+            try {
+                ReservationStatus reservationStatus = ReservationStatus.valueOf(status.toUpperCase());
+                reservations = reservationService.getReservationsByRestaurantIdAndStatus(restaurant.getId(), reservationStatus);
+            } catch (IllegalArgumentException e) {
+                reservations = reservationService.getReservationsByRestaurantId(restaurant.getId());
+            }
         } else {
             reservations = reservationService.getReservationsByRestaurantId(restaurant.getId());
         }
         
         model.addAttribute("reservations", reservations);
         model.addAttribute("status", status);
-        return "manager/reservations";
+        return "manager/reservations/list";
     }
 
     // 예약 승인
@@ -52,8 +58,8 @@ public class ReservationManagerController {
             RedirectAttributes redirectAttributes) {
         
         try {
-            RestaurantDto restaurant = restaurantService.getRestaurantByManagerEmail(userDetails.getUsername());
-            ReservationDto reservation = reservationService.getReservationById(id);
+            RestaurantDTO restaurant = restaurantService.getRestaurantByManagerEmail(userDetails.getUsername());
+            ReservationDTO reservation = reservationService.getReservationById(id);
             
             // 예약이 해당 레스토랑의 것인지 확인
             if (!reservation.getRestaurantId().equals(restaurant.getId())) {
@@ -77,8 +83,8 @@ public class ReservationManagerController {
             RedirectAttributes redirectAttributes) {
         
         try {
-            RestaurantDto restaurant = restaurantService.getRestaurantByManagerEmail(userDetails.getUsername());
-            ReservationDto reservation = reservationService.getReservationById(id);
+            RestaurantDTO restaurant = restaurantService.getRestaurantByManagerEmail(userDetails.getUsername());
+            ReservationDTO reservation = reservationService.getReservationById(id);
             
             // 예약이 해당 레스토랑의 것인지 확인
             if (!reservation.getRestaurantId().equals(restaurant.getId())) {
@@ -92,5 +98,34 @@ public class ReservationManagerController {
         }
         
         return "redirect:/manager/reservations";
+    }
+
+    @PostMapping("/{id}/status")
+    public String updateReservationStatus(
+            @PathVariable Long id,
+            @RequestParam String status,
+            RedirectAttributes redirectAttributes) {
+        try {
+            ReservationStatus reservationStatus = ReservationStatus.valueOf(status.toUpperCase());
+            reservationService.updateReservationStatus(id, reservationStatus);
+            redirectAttributes.addFlashAttribute("successMessage", "예약 상태가 업데이트되었습니다.");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "잘못된 예약 상태입니다.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "예약 상태 업데이트 중 오류가 발생했습니다: " + e.getMessage());
+        }
+        return "redirect:/manager/reservations";
+    }
+
+    @GetMapping("/pending")
+    public String listPendingReservations(Model model) {
+        model.addAttribute("reservations", reservationService.getReservationsByStatus(ReservationStatus.PENDING));
+        return "manager/reservations/pending";
+    }
+
+    @GetMapping("/approved")
+    public String listApprovedReservations(Model model) {
+        model.addAttribute("reservations", reservationService.getReservationsByStatus(ReservationStatus.APPROVED));
+        return "manager/reservations/approved";
     }
 } 

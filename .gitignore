@@ -36,8 +36,9 @@ build/
 *.log
 logs/
 
-### Upload Directory ###
-uploads/
-
 ### Application Properties ###
-src/main/resources/application-prod.properties 
+src/main/resources/application-dev.yml
+src/main/resources/application-prod.yml
+
+### Uploaded Files ###
+uploads/ 

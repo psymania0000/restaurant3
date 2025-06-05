@@ -1,0 +1,74 @@
+@startuml Restaurant Management System Use Cases
+
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseStyle roundbox
+
+actor "Guest" as guest
+actor "User" as user
+actor "Admin" as admin
+
+rectangle "Restaurant Management System" {
+    usecase "View Restaurant List" as UC1
+    usecase "View Restaurant Details" as UC2
+    usecase "Search Restaurants" as UC3
+    usecase "Register" as UC4
+    usecase "Login" as UC5
+    usecase "Make Reservation" as UC6
+    usecase "View My Reservations" as UC7
+    usecase "Cancel Reservation" as UC8
+    usecase "Add New Restaurant" as UC9
+    usecase "Edit Restaurant Info" as UC10
+    usecase "Delete Restaurant" as UC11
+    usecase "View All Users" as UC12
+    usecase "Block/Unblock User" as UC13
+    usecase "View All Reservations" as UC14
+    usecase "Approve Reservation" as UC15
+    usecase "Reject Reservation" as UC16
+    usecase "View Menu" as UC17
+    usecase "Update Profile" as UC18
+    usecase "Earn Points" as UC19
+    usecase "Use Points" as UC20
+}
+
+' Guest Use Cases
+guest --> UC1
+guest --> UC2
+guest --> UC3
+guest --> UC4
+guest --> UC5
+
+' User Use Cases
+user --> UC1
+user --> UC2
+user --> UC3
+user --> UC6
+user --> UC7
+user --> UC8
+user --> UC17
+user --> UC18
+user --> UC19
+user --> UC20
+
+' Admin Use Cases
+admin --> UC9
+admin --> UC10
+admin --> UC11
+admin --> UC12
+admin --> UC13
+admin --> UC14
+admin --> UC15
+admin --> UC16
+
+' Relationships
+UC1 ..> UC2 : <<include>>
+UC6 ..> UC17 : <<include>>
+UC7 ..> UC8 : <<extend>>
+UC9 ..> UC1 : <<extend>>
+UC10 ..> UC2 : <<extend>>
+UC11 ..> UC1 : <<extend>>
+UC12 ..> UC13 : <<extend>>
+UC14 ..> UC15 : <<extend>>
+UC14 ..> UC16 : <<extend>>
+
+@enduml 

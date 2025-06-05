@@ -1,101 +1,154 @@
 package com.restaurant.service;
 
-import com.restaurant.dto.MenuDto;
+import com.restaurant.dto.MenuDTO;
 import com.restaurant.entity.Menu;
 import com.restaurant.entity.Restaurant;
 import com.restaurant.repository.MenuRepository;
 import com.restaurant.repository.RestaurantRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
+import jakarta.persistence.EntityNotFoundException;
+import java.util.UUID;
+import jakarta.annotation.PostConstruct;
+import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
 public class MenuService {
+
     private final MenuRepository menuRepository;
     private final RestaurantRepository restaurantRepository;
+    private final String uploadDir = "src/main/resources/static/images/menus";
 
-    @Transactional
-    public MenuDto createMenu(MenuDto menuDto) {
-        Restaurant restaurant = restaurantRepository.findById(menuDto.getRestaurantId())
-                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
-
-        Menu menu = new Menu();
-        menu.setRestaurant(restaurant);
-        menu.setName(menuDto.getName());
-        menu.setDescription(menuDto.getDescription());
-        menu.setPrice(new BigDecimal(menuDto.getPrice()));
-        menu.setCategory(menuDto.getCategory());
-        menu.setImageUrl(menuDto.getImageUrl());
-
-        Menu savedMenu = menuRepository.save(menu);
-        return convertToDto(savedMenu);
+    @PostConstruct
+    public void init() {
+        try {
+            Files.createDirectories(Paths.get(uploadDir));
+        } catch (IOException ex) {
+            throw new RuntimeException("Could not create the directory where the uploaded files will be stored.", ex);
+        }
     }
 
     @Transactional
-    public MenuDto updateMenu(Long menuId, MenuDto menuDto) {
-        Menu menu = menuRepository.findById(menuId)
-                .orElseThrow(() -> new EntityNotFoundException("Menu not found"));
+    public MenuDTO createMenu(MenuDTO menuDTO, MultipartFile image) {
+        Menu menu = new Menu();
+        menu.setName(menuDTO.getName());
+        menu.setDescription(menuDTO.getDescription());
+        menu.setPrice(menuDTO.getPrice().doubleValue());
+        menu.setCategory(menuDTO.getCategory());
+        menu.setAvailable(menuDTO.getAvailable() != null ? menuDTO.getAvailable() : true);
+        
+        Restaurant restaurant = restaurantRepository.findById(menuDTO.getRestaurantId())
+                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
+        menu.setRestaurant(restaurant);
 
-        menu.setName(menuDto.getName());
-        menu.setDescription(menuDto.getDescription());
-        menu.setPrice(new BigDecimal(menuDto.getPrice()));
-        menu.setCategory(menuDto.getCategory());
-        if (menuDto.getImageUrl() != null) {
-            menu.setImageUrl(menuDto.getImageUrl());
-        } else if (menu.getImageUrl() != null) {
-            // Keep the existing image URL if no new image is uploaded and there was an old one
-            menuDto.setImageUrl(menu.getImageUrl());
+        if (image != null && !image.isEmpty()) {
+            try {
+                String originalFilename = image.getOriginalFilename();
+                String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                String uniqueFileName = UUID.randomUUID().toString() + fileExtension;
+                Path filePath = Paths.get(uploadDir, uniqueFileName);
+                Files.copy(image.getInputStream(), filePath);
+                menu.setImageUrl("/images/menus/" + uniqueFileName);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to upload menu image", e);
+            }
         }
 
-        Menu updatedMenu = menuRepository.save(menu);
-        return convertToDto(updatedMenu);
+        return convertToDTO(menuRepository.save(menu));
     }
 
-    @Transactional
-    public void deleteMenu(Long menuId) {
-        Menu menu = menuRepository.findById(menuId)
-                .orElseThrow(() -> new EntityNotFoundException("Menu not found"));
-        menuRepository.delete(menu);
-    }
-
-    public List<MenuDto> getRestaurantMenus(Long restaurantId) {
-        return menuRepository.findByRestaurantId(restaurantId).stream()
-                .map(this::convertToDto)
+    @Transactional(readOnly = true)
+    public List<MenuDTO> getAllMenus() {
+        return menuRepository.findAll().stream()
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
-    public MenuDto getMenuById(Long menuId) {
-        Menu menu = menuRepository.findById(menuId)
+    @Transactional(readOnly = true)
+    public MenuDTO getMenuById(Long id) {
+        Menu menu = menuRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Menu not found"));
+        return convertToDTO(menu);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MenuDTO> getMenusByRestaurantId(Long restaurantId) {
+        return menuRepository.findByRestaurantId(restaurantId).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public MenuDTO updateMenu(Long id, MenuDTO menuDTO, MultipartFile image) {
+        Menu menu = menuRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Menu not found"));
+
+        menu.setName(menuDTO.getName());
+        menu.setDescription(menuDTO.getDescription());
+        menu.setPrice(menuDTO.getPrice().doubleValue());
+        menu.setCategory(menuDTO.getCategory());
+        menu.setAvailable(menuDTO.getAvailable());
+
+        if (image != null && !image.isEmpty()) {
+            try {
+                String originalFilename = image.getOriginalFilename();
+                String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                String uniqueFileName = UUID.randomUUID().toString() + fileExtension;
+                Path filePath = Paths.get(uploadDir, uniqueFileName);
+                Files.copy(image.getInputStream(), filePath);
+                menu.setImageUrl("/images/menus/" + uniqueFileName);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to upload menu image", e);
+            }
+        }
+
+        return convertToDTO(menuRepository.save(menu));
+    }
+
+    @Transactional
+    public void deleteMenu(Long id) {
+        menuRepository.deleteById(id);
+    }
+
+    private MenuDTO convertToDTO(Menu menu) {
+        return MenuDTO.builder()
+                .id(menu.getId())
+                .name(menu.getName())
+                .description(menu.getDescription())
+                .price(BigDecimal.valueOf(menu.getPrice()))
+                .category(menu.getCategory())
+                .available(menu.getAvailable())
+                .restaurantId(menu.getRestaurant().getId())
+                .imageUrl(menu.getImageUrl())
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<MenuDTO> getRestaurantMenus(Long restaurantId) {
+        return menuRepository.findByRestaurantId(restaurantId).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void toggleMenuAvailability(Long id) {
+        Menu menu = menuRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Menu not found"));
-        return convertToDto(menu);
+        menu.setAvailable(!menu.getAvailable());
+        menuRepository.save(menu);
     }
 
-    private MenuDto convertToDto(Menu menu) {
-        MenuDto dto = new MenuDto();
-        dto.setId(menu.getId());
-        // TODO: Handle case where restaurant might be null if not fetched eagerly
-        if (menu.getRestaurant() != null) {
-             dto.setRestaurantId(menu.getRestaurant().getId());
-        }
-        dto.setName(menu.getName());
-        dto.setDescription(menu.getDescription());
-        if (menu.getPrice() != null) {
-            dto.setPrice(menu.getPrice().doubleValue());
-        } else {
-            dto.setPrice(0.0);
-        }
-        dto.setCategory(menu.getCategory());
-        dto.setImageUrl(menu.getImageUrl());
-        return dto;
-    }
-
-    public List<Menu> getAllMenus() {
-        return menuRepository.findAll();
+    @Transactional(readOnly = true)
+    public long getMenuCount() {
+        return menuRepository.count();
     }
 } 

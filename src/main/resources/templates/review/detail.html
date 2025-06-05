@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>리뷰 상세보기</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="mb-0">리뷰 상세보기</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="review-info mb-4">
+                            <h4 th:text="${review.restaurantName}">레스토랑 이름</h4>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="text-muted">작성자: </span>
+                                    <span th:text="${review.userName}">사용자 이름</span>
+                                </div>
+                                <div>
+                                    <span class="text-muted">작성일: </span>
+                                    <span th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="review-content mb-4">
+                            <h5>평점</h5>
+                            <div class="rating">
+                                <div class="stars">
+                                    <span th:each="i : ${#numbers.sequence(1, 5)}" 
+                                          th:class="${i <= review.rating ? 'text-warning' : 'text-muted'}"
+                                          th:text="'★'">★</span>
+                                </div>
+                                <span class="ml-2" th:text="${review.rating + '/5'}">5/5</span>
+                            </div>
+                        </div>
+
+                        <div class="review-content mb-4">
+                            <h5>리뷰 내용</h5>
+                            <p class="review-text" th:text="${review.content}">리뷰 내용</p>
+                        </div>
+
+                        <div class="review-actions">
+                            <a th:href="@{/restaurants/{id}(id=${review.restaurantId})}" class="btn btn-secondary">레스토랑으로 돌아가기</a>
+                            <div th:if="${#authorization.expression('isAuthenticated()') && #authorization.expression('authentication.principal.id == ' + review.userId)}" class="float-right">
+                                <a th:href="@{/reviews/{id}/edit(id=${review.id})}" class="btn btn-primary">수정</a>
+                                <form th:action="@{/reviews/{id}(id=${review.id})}" method="post" style="display: inline;">
+                                    <input type="hidden" name="_method" value="delete" />
+                                    <button type="submit" class="btn btn-danger" onclick="return confirm('정말로 이 리뷰를 삭제하시겠습니까?');">삭제</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html> 

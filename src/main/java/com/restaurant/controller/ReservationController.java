@@ -1,12 +1,14 @@
 package com.restaurant.controller;
 
-import com.restaurant.dto.ReservationDto;
-import com.restaurant.dto.RestaurantDto;
-import com.restaurant.dto.UserDto;
+import com.restaurant.dto.ReservationDTO;
+import com.restaurant.dto.RestaurantDTO;
+import com.restaurant.dto.UserDTO;
+import com.restaurant.entity.User;
 import com.restaurant.service.ReservationService;
 import com.restaurant.service.RestaurantService;
 import com.restaurant.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -16,6 +18,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import org.springframework.http.ResponseEntity;
 
 @Controller
 @RequestMapping("/restaurants/{restaurantId}/reserve")
@@ -28,15 +31,15 @@ public class ReservationController {
 
     @GetMapping
     public String showReservationForm(@PathVariable Long restaurantId, Model model, @AuthenticationPrincipal UserDetails userDetails) {
-        RestaurantDto restaurant = restaurantService.getRestaurantById(restaurantId);
+        RestaurantDTO restaurant = restaurantService.getRestaurantById(restaurantId);
         model.addAttribute("restaurant", restaurant);
 
         if (userDetails != null) {
-            UserDto user = userService.getUserByEmail(userDetails.getUsername());
-            model.addAttribute("user", user);
+            User user = userService.getUserByUsername(userDetails.getUsername());
+            UserDTO userDTO = userService.convertToDTO(user);
+            model.addAttribute("user", userDTO);
         } else {
-             // 로그인하지 않은 사용자 처리 (로그인 페이지로 리다이렉트 등)
-             return "redirect:/login";
+            return "redirect:/login";
         }
 
         // 예약 시간 선택을 위한 기본 데이터 (예시: 오늘부터 일주일)
@@ -48,7 +51,7 @@ public class ReservationController {
         List<LocalDateTime> availableTimes = reservationService.getAvailableReservationTimes(restaurantId);
         model.addAttribute("availableTimes", availableTimes);
 
-        ReservationDto reservationDto = new ReservationDto();
+        ReservationDTO reservationDto = new ReservationDTO();
         reservationDto.setRestaurantId(restaurantId);
         // 기본값 설정 (선택 사항)
         // reservationDto.setNumberOfPeople(defaultPartySize);
@@ -62,23 +65,28 @@ public class ReservationController {
     }
 
     @PostMapping
-    public String submitReservation(@PathVariable Long restaurantId, @ModelAttribute("reservationDto") ReservationDto reservationDto, @AuthenticationPrincipal UserDetails userDetails, RedirectAttributes redirectAttributes) {
+    public String submitReservation(
+            @PathVariable Long restaurantId,
+            @ModelAttribute("reservationDto") ReservationDTO reservationDto,
+            @AuthenticationPrincipal UserDetails userDetails,
+            RedirectAttributes redirectAttributes) {
         if (userDetails == null) {
             return "redirect:/login";
         }
 
         try {
-            UserDto user = userService.getUserByEmail(userDetails.getUsername());
-            reservationDto.setUserId(user.getId());
+            User user = userService.getUserByUsername(userDetails.getUsername());
+            UserDTO userDTO = userService.convertToDTO(user);
+            reservationDto.setUserId(userDTO.getId());
             reservationDto.setRestaurantId(restaurantId);
 
-            reservationService.createReservation(reservationDto, user.getId());
+            reservationService.createReservation(reservationDto, userDTO.getId());
 
             redirectAttributes.addFlashAttribute("successMessage", "예약 요청이 완료되었습니다.");
-            return "redirect:/mypage/reservations"; // 사용자 마이페이지 예약 목록으로 리다이렉트
+            return "redirect:/mypage/reservations";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "예약 요청 중 오류가 발생했습니다: " + e.getMessage());
-            return "redirect:/restaurants/" + restaurantId + "/reserve"; // 오류 발생 시 예약 페이지로 돌아감
+            return "redirect:/restaurants/" + restaurantId + "/reserve";
         }
     }
 
@@ -91,4 +99,20 @@ public class ReservationController {
     // }
 
     // TODO: 날짜/시간 포맷 변환 유틸리티 메서드 필요 시 추가
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ReservationDTO> getReservationById(@PathVariable Long id) {
+        ReservationDTO reservation = reservationService.getReservationById(id);
+        return ResponseEntity.ok(reservation);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ReservationDTO> updateReservation(@PathVariable Long id, @RequestBody ReservationDTO reservationDTO, @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        User user = userService.getUserByUsername(userDetails.getUsername());
+        ReservationDTO updatedReservation = reservationService.updateReservationStatus(id, reservationDTO.getStatus());
+        return ResponseEntity.ok(updatedReservation);
+    }
 } 
