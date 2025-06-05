@@ -65,4 +65,5 @@ com\restaurant\entity\Restaurant$RestaurantBuilder.class
 com\restaurant\controller\admin\AdminDashboardController.class
 com\restaurant\controller\admin\AdminReviewController.class
 com\restaurant\controller\ErrorController.class
+com\restaurant\dto\RestaurantDTO$RestaurantDTOBuilder.class
 com\restaurant\dto\ReviewDTO.class

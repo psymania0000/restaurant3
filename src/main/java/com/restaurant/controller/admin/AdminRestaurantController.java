@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import jakarta.annotation.PostConstruct;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -38,6 +39,15 @@ public class AdminRestaurantController {
     @Value("${app.upload.dir}") // 이미지 업로드 디렉토리 경로 주입
     private String uploadDir;
 
+    @PostConstruct
+    public void init() {
+        try {
+            Files.createDirectories(Paths.get(uploadDir));
+        } catch (IOException e) {
+            throw new RuntimeException("Could not create upload directory!", e);
+        }
+    }
+
     // 식당 목록 조회
     @GetMapping
     public String listRestaurants(Model model) {
@@ -57,8 +67,7 @@ public class AdminRestaurantController {
 
     // 식당 추가 폼
     @GetMapping("/new")
-    public String newRestaurantForm(Model model) {
-        model.addAttribute("restaurant", new RestaurantDTO());
+    public String newRestaurantForm() {
         return "admin/restaurant/form";
     }
 

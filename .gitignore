@@ -40,5 +40,6 @@ logs/
 src/main/resources/application-dev.yml
 src/main/resources/application-prod.yml
 
-### Uploaded Files ###
-uploads/ 
+### Upload Directory ###
+uploads/
+src/main/resources/static/images/ 

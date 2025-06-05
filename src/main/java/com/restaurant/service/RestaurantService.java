@@ -45,7 +45,7 @@ public class RestaurantService {
         restaurant.setCategory(restaurantDTO.getCategory());
         restaurant.setBusinessHours(restaurantDTO.getBusinessHours());
         restaurant.setMaxCapacity(restaurantDTO.getMaxCapacity());
-        restaurant.setOpen(restaurantDTO.isOpen());
+        restaurant.setOpen(true);
         restaurant.setAdminEmail(restaurantDTO.getAdminEmail());
         restaurant.setReservationInterval(restaurantDTO.getReservationInterval() != null ? restaurantDTO.getReservationInterval() : 30);
 
