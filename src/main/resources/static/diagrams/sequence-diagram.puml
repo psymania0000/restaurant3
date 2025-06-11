@@ -1,0 +1,63 @@
+@startuml Sequence Diagram
+
+' 스타일 설정
+skinparam sequence {
+    ArrowColor #2C3E50
+    ActorBorderColor #2C3E50
+    LifeLineBorderColor #2C3E50
+    LifeLineBackgroundColor #ECF0F1
+    ParticipantBorderColor #2C3E50
+    ParticipantBackgroundColor #ECF0F1
+    ParticipantFontName "Noto Sans KR"
+    ParticipantFontSize 14
+    ActorFontName "Noto Sans KR"
+    ActorFontSize 14
+}
+
+actor User
+participant "Frontend" as Front
+participant "Controller" as Ctrl
+participant "Service" as Service
+participant "Repository" as Repo
+database "Database" as DB
+
+== 예약 프로세스 ==
+
+User -> Front: 예약 요청
+Front -> Ctrl: POST /reservations
+Ctrl -> Service: createReservation()
+Service -> Repo: save()
+Repo -> DB: INSERT
+DB --> Repo: 성공
+Repo --> Service: Reservation
+Service --> Ctrl: ReservationDTO
+Ctrl --> Front: 응답
+Front --> User: 예약 완료
+
+== 리뷰 작성 프로세스 ==
+
+User -> Front: 리뷰 작성
+Front -> Ctrl: POST /reviews
+Ctrl -> Service: createReview()
+Service -> Repo: save()
+Repo -> DB: INSERT
+DB --> Repo: 성공
+Repo --> Service: Review
+Service --> Ctrl: ReviewDTO
+Ctrl --> Front: 응답
+Front --> User: 리뷰 등록 완료
+
+== 관리자 대시보드 프로세스 ==
+
+User -> Front: 대시보드 접속
+Front -> Ctrl: GET /admin/dashboard
+Ctrl -> Service: getDashboardStats()
+Service -> Repo: findRestaurantsByManager()
+Repo -> DB: SELECT
+DB --> Repo: 결과
+Repo --> Service: List<Restaurant>
+Service --> Ctrl: DashboardStats
+Ctrl --> Front: 응답
+Front --> User: 대시보드 표시
+
+@enduml 

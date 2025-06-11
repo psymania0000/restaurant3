@@ -1,0 +1,96 @@
+@startuml Restaurant Management System
+
+' 스타일 설정
+skinparam componentStyle uml2
+skinparam backgroundColor white
+skinparam handwritten false
+skinparam defaultFontName "Noto Sans KR"
+skinparam defaultFontSize 14
+
+' 패키지 정의
+package "Frontend" {
+    [Thymeleaf Templates] as Templates
+    [Static Resources] as Static
+    [JavaScript] as JS
+    [CSS] as CSS
+}
+
+package "Controllers" {
+    [HomeController] as Home
+    [RestaurantController] as Restaurant
+    [MenuController] as Menu
+    [ReviewController] as Review
+    [ReservationController] as Reservation
+    [UserController] as User
+    [AuthController] as Auth
+    
+    package "Admin" {
+        [AdminDashboardController] as AdminDashboard
+        [AdminRestaurantController] as AdminRestaurant
+        [AdminMenuController] as AdminMenu
+        [AdminReviewController] as AdminReview
+        [AdminReservationController] as AdminReservation
+    }
+}
+
+package "Services" {
+    [RestaurantService] as RestaurantService
+    [MenuService] as MenuService
+    [ReviewService] as ReviewService
+    [ReservationService] as ReservationService
+    [UserService] as UserService
+    [FileStorageService] as FileService
+}
+
+package "Security" {
+    [SecurityConfig] as Security
+    [CustomUserDetailsService] as UserDetails
+    [JwtTokenProvider] as JWT
+}
+
+package "Database" {
+    database "MariaDB" {
+        [Restaurant] as RestaurantDB
+        [Menu] as MenuDB
+        [Review] as ReviewDB
+        [Reservation] as ReservationDB
+        [User] as UserDB
+    }
+}
+
+' 관계 정의
+Frontend --> Controllers
+Controllers --> Services
+Services --> Database
+
+' 보안 관련 관계
+Security --> UserDetails
+UserDetails --> UserService
+Controllers --> Security
+
+' 파일 업로드 관련
+FileService --> Static
+
+' 관리자 컨트롤러 관계
+AdminDashboard --> RestaurantService
+AdminRestaurant --> RestaurantService
+AdminMenu --> MenuService
+AdminReview --> ReviewService
+AdminReservation --> ReservationService
+
+' 일반 컨트롤러 관계
+Restaurant --> RestaurantService
+Menu --> MenuService
+Review --> ReviewService
+Reservation --> ReservationService
+User --> UserService
+Auth --> UserService
+
+' 서비스와 DB 관계
+RestaurantService --> RestaurantDB
+MenuService --> MenuDB
+ReviewService --> ReviewDB
+ReservationService --> ReservationDB
+UserService --> UserDB
+
+@enduml 

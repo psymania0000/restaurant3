@@ -1,0 +1,84 @@
+@startuml Database Schema
+
+' 스타일 설정
+skinparam classStyle uml2
+skinparam backgroundColor white
+skinparam handwritten false
+skinparam defaultFontName "Noto Sans KR"
+skinparam defaultFontSize 14
+
+' 엔티티 정의
+entity "User" as user {
+    * id : Long <<PK>>
+    --
+    * email : String <<unique>>
+    * password : String
+    * name : String
+    * phone : String
+    * role : String
+    * points : Integer
+    * created_at : LocalDateTime
+    * updated_at : LocalDateTime
+}
+
+entity "Restaurant" as restaurant {
+    * id : Long <<PK>>
+    --
+    * name : String
+    * description : Text
+    * address : String
+    * phone : String
+    * business_hours : String
+    * image_url : String
+    * manager_id : Long <<FK>>
+    * created_at : LocalDateTime
+    * updated_at : LocalDateTime
+}
+
+entity "Menu" as menu {
+    * id : Long <<PK>>
+    --
+    * restaurant_id : Long <<FK>>
+    * name : String
+    * description : Text
+    * price : BigDecimal
+    * image_url : String
+    * category : String
+    * created_at : LocalDateTime
+    * updated_at : LocalDateTime
+}
+
+entity "Review" as review {
+    * id : Long <<PK>>
+    --
+    * restaurant_id : Long <<FK>>
+    * user_id : Long <<FK>>
+    * rating : Integer
+    * content : Text
+    * image_url : String
+    * created_at : LocalDateTime
+    * updated_at : LocalDateTime
+}
+
+entity "Reservation" as reservation {
+    * id : Long <<PK>>
+    --
+    * restaurant_id : Long <<FK>>
+    * user_id : Long <<FK>>
+    * reservation_time : LocalDateTime
+    * number_of_people : Integer
+    * status : String
+    * special_requests : Text
+    * created_at : LocalDateTime
+    * updated_at : LocalDateTime
+}
+
+' 관계 정의
+user ||--o{ restaurant : manages
+restaurant ||--o{ menu : has
+restaurant ||--o{ review : receives
+user ||--o{ review : writes
+restaurant ||--o{ reservation : accepts
+user ||--o{ reservation : makes
+
+@enduml 
