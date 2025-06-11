@@ -10,7 +10,6 @@ C:\restaurant\src\main\java\com\restaurant\security\JwtTokenProvider.java
 C:\restaurant\src\main\java\com\restaurant\controller\admin\AdminDashboardController.java
 C:\restaurant\src\main\java\com\restaurant\service\UserService.java
 C:\restaurant\src\main\java\com\restaurant\service\ReservationService.java
-C:\restaurant\src\main\java\com\restaurant\config\WebConfig.java
 C:\restaurant\src\main\java\com\restaurant\controller\MyPageController.java
 C:\restaurant\src\main\java\com\restaurant\entity\User.java
 C:\restaurant\src\main\java\com\restaurant\dto\UserUpdateDTO.java

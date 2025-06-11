@@ -5,7 +5,6 @@ com\restaurant\controller\ReservationController.class
 com\restaurant\service\NotificationService.class
 com\restaurant\config\ThymeleafConfig.class
 com\restaurant\controller\ReviewController.class
-com\restaurant\config\WebConfig.class
 com\restaurant\controller\AuthController.class
 com\restaurant\security\CustomUserDetails.class
 com\restaurant\service\ReviewService.class
