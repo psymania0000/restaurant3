@@ -2,6 +2,7 @@ package com.restaurant.controller;
 
 import com.restaurant.dto.RestaurantDTO;
 import com.restaurant.dto.MenuDTO;
+import com.restaurant.entity.MenuCategory;
 import com.restaurant.service.RestaurantService;
 import com.restaurant.service.MenuService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 import java.util.List;
+import java.util.Arrays;
 
 @Controller
 @RequestMapping("/manager/restaurant")
@@ -32,7 +34,7 @@ public class RestaurantManagerController {
     // 레스토랑 관리자 대시보드
     @GetMapping
     public String dashboard(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        RestaurantDTO restaurant = restaurantService.getRestaurantByManagerEmail(userDetails.getUsername());
+        RestaurantDTO restaurant = restaurantService.getRestaurantByEmail(userDetails.getUsername());
         model.addAttribute("restaurant", restaurant);
         return "manager/dashboard";
     }
@@ -40,7 +42,7 @@ public class RestaurantManagerController {
     // 레스토랑 정보 수정 폼
     @GetMapping("/edit")
     public String editForm(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        RestaurantDTO restaurant = restaurantService.getRestaurantByManagerEmail(userDetails.getUsername());
+        RestaurantDTO restaurant = restaurantService.getRestaurantByEmail(userDetails.getUsername());
         model.addAttribute("restaurant", restaurant);
         return "manager/restaurant/edit";
     }
@@ -54,7 +56,7 @@ public class RestaurantManagerController {
             RedirectAttributes redirectAttributes) {
         
         try {
-            RestaurantDTO currentRestaurant = restaurantService.getRestaurantByManagerEmail(userDetails.getUsername());
+            RestaurantDTO currentRestaurant = restaurantService.getRestaurantByEmail(userDetails.getUsername());
             restaurantDto.setId(currentRestaurant.getId());
             restaurantService.updateRestaurant(currentRestaurant.getId(), restaurantDto, imageFile);
             redirectAttributes.addFlashAttribute("successMessage", "레스토랑 정보가 성공적으로 수정되었습니다.");
@@ -67,7 +69,7 @@ public class RestaurantManagerController {
     // 메뉴 관리 페이지
     @GetMapping("/menus")
     public String manageMenus(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        RestaurantDTO restaurant = restaurantService.getRestaurantByManagerEmail(userDetails.getUsername());
+        RestaurantDTO restaurant = restaurantService.getRestaurantByEmail(userDetails.getUsername());
         model.addAttribute("restaurant", restaurant);
         model.addAttribute("menus", menuService.getRestaurantMenus(restaurant.getId()));
         return "manager/menu/list";
@@ -76,16 +78,17 @@ public class RestaurantManagerController {
     // 새 메뉴 추가 폼
     @GetMapping("/menus/new")
     public String newMenuForm(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        RestaurantDTO restaurant = restaurantService.getRestaurantByManagerEmail(userDetails.getUsername());
+        RestaurantDTO restaurant = restaurantService.getRestaurantByEmail(userDetails.getUsername());
         model.addAttribute("restaurantId", restaurant.getId());
         model.addAttribute("menu", new MenuDTO());
+        model.addAttribute("categories", Arrays.asList(MenuCategory.values()));
         return "manager/menu/form";
     }
 
     // 메뉴 수정 폼
     @GetMapping("/menus/{id}/edit")
     public String editMenuForm(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails, Model model) {
-        RestaurantDTO restaurant = restaurantService.getRestaurantByManagerEmail(userDetails.getUsername());
+        RestaurantDTO restaurant = restaurantService.getRestaurantByEmail(userDetails.getUsername());
         MenuDTO menu = menuService.getMenuById(id);
         
         // 메뉴가 해당 레스토랑의 것인지 확인
@@ -95,6 +98,7 @@ public class RestaurantManagerController {
         
         model.addAttribute("restaurantId", restaurant.getId());
         model.addAttribute("menu", menu);
+        model.addAttribute("categories", Arrays.asList(MenuCategory.values()));
         return "manager/menu/form";
     }
 
@@ -107,7 +111,7 @@ public class RestaurantManagerController {
             RedirectAttributes redirectAttributes) {
         
         try {
-            RestaurantDTO restaurant = restaurantService.getRestaurantByManagerEmail(userDetails.getUsername());
+            RestaurantDTO restaurant = restaurantService.getRestaurantByEmail(userDetails.getUsername());
             menuDto.setRestaurantId(restaurant.getId());
             menuService.createMenu(menuDto, imageFile);
             redirectAttributes.addFlashAttribute("successMessage", "메뉴가 성공적으로 추가되었습니다.");
@@ -127,7 +131,7 @@ public class RestaurantManagerController {
             RedirectAttributes redirectAttributes) {
         
         try {
-            RestaurantDTO restaurant = restaurantService.getRestaurantByManagerEmail(userDetails.getUsername());
+            RestaurantDTO restaurant = restaurantService.getRestaurantByEmail(userDetails.getUsername());
             MenuDTO currentMenu = menuService.getMenuById(id);
             
             // 메뉴가 해당 레스토랑의 것인지 확인
@@ -153,7 +157,7 @@ public class RestaurantManagerController {
             RedirectAttributes redirectAttributes) {
         
         try {
-            RestaurantDTO restaurant = restaurantService.getRestaurantByManagerEmail(userDetails.getUsername());
+            RestaurantDTO restaurant = restaurantService.getRestaurantByEmail(userDetails.getUsername());
             MenuDTO menu = menuService.getMenuById(id);
             
             // 메뉴가 해당 레스토랑의 것인지 확인

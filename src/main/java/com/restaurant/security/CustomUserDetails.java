@@ -63,6 +63,10 @@ public class CustomUserDetails implements UserDetails {
         return enabled;
     }
 
+    public Long getId() {
+        return user.getId();
+    }
+
     public User getUser() {
         return user;
     }

@@ -1,5 +1,6 @@
 package com.restaurant.dto;
 
+import com.restaurant.entity.MenuCategory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +16,7 @@ public class MenuDTO {
     private String name;
     private String description;
     private BigDecimal price;
-    private String category;
+    private MenuCategory category;
     private Boolean available;
     private Long restaurantId;
     private String imageUrl;

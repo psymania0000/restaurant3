@@ -32,12 +32,17 @@ public class AuthController {
 
     @GetMapping("/login")
     public String loginPage() {
-        return "auth/login";
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !authentication.getName().equals("anonymousUser")) {
+            return "redirect:/";
+        }
+        return "login";
     }
 
     @PostMapping("/login")
     public String login(@RequestParam String username, 
                        @RequestParam String password,
+                       @RequestParam(required = false) String rememberMe,
                        HttpServletRequest request,
                        RedirectAttributes redirectAttributes) {
         log.info("로그인 시도: username={}", username);
@@ -68,7 +73,7 @@ public class AuthController {
     @GetMapping("/signup")
     public String signupPage(Model model) {
         model.addAttribute("signupRequest", new SignupRequest());
-        return "auth/signup";
+        return "signup";
     }
 
     @PostMapping("/signup")

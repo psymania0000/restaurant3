@@ -13,6 +13,7 @@ C:\restaurant\src\main\java\com\restaurant\service\ReservationService.java
 C:\restaurant\src\main\java\com\restaurant\config\WebConfig.java
 C:\restaurant\src\main\java\com\restaurant\controller\MyPageController.java
 C:\restaurant\src\main\java\com\restaurant\entity\User.java
+C:\restaurant\src\main\java\com\restaurant\dto\UserUpdateDTO.java
 C:\restaurant\src\main\java\com\restaurant\controller\NotificationController.java
 C:\restaurant\src\main\java\com\restaurant\config\WebMvcConfig.java
 C:\restaurant\src\main\java\com\restaurant\dto\MenuDTO.java
@@ -51,6 +52,7 @@ C:\restaurant\src\main\java\com\restaurant\model\User.java
 C:\restaurant\src\main\java\com\restaurant\controller\RestaurantController.java
 C:\restaurant\src\main\java\com\restaurant\service\NotificationService.java
 C:\restaurant\src\main\java\com\restaurant\controller\UserController.java
+C:\restaurant\src\main\java\com\restaurant\entity\MenuCategory.java
 C:\restaurant\src\main\java\com\restaurant\controller\ReviewController.java
 C:\restaurant\src\main\java\com\restaurant\repository\ReservationRepository.java
 C:\restaurant\src\main\java\com\restaurant\controller\RestaurantManagerController.java

@@ -3,9 +3,11 @@ package com.restaurant.service;
 import com.restaurant.dto.LoginRequest;
 import com.restaurant.dto.SignupRequest;
 import com.restaurant.dto.UserDTO;
+import com.restaurant.dto.UserUpdateDTO;
 import com.restaurant.entity.User;
 import com.restaurant.model.UserRole;
 import com.restaurant.repository.UserRepository;
+import com.restaurant.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +19,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.annotation.PostConstruct;
+import java.util.ArrayList;
 
 @Slf4j
 @Service
@@ -25,6 +28,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RestaurantRepository restaurantRepository;
 
     @PostConstruct
     public void init() {
@@ -156,6 +160,7 @@ public class UserService {
         user.setEmail(userDTO.getEmail());
         user.setPhone(userDTO.getPhone());
         user.setAddress(userDTO.getAddress());
+        user.setRole(userDTO.getRole());
 
         User updatedUser = userRepository.save(user);
         return convertToDTO(updatedUser);
@@ -191,8 +196,9 @@ public class UserService {
         return convertToDTO(updatedUser);
     }
 
+    @Transactional(readOnly = true)
     public UserDTO convertToDTO(User user) {
-        return UserDTO.builder()
+        UserDTO.UserDTOBuilder builder = UserDTO.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .name(user.getName())
@@ -203,14 +209,23 @@ public class UserService {
                 .role(user.getRole())
                 .enabled(user.getEnabled())
                 .createdAt(user.getCreatedAt())
-                .lastLoginAt(user.getLastLoginAt())
-                .build();
+                .lastLoginAt(user.getLastLoginAt());
+
+        // 관리 식당 이름 리스트 세팅 (email 기준)
+        java.util.List<String> managedRestaurantNames = restaurantRepository.findByEmail(user.getEmail())
+            .map(r -> java.util.List.of(r.getName()))
+            .orElseGet(java.util.ArrayList::new);
+        builder.managedRestaurantNames(managedRestaurantNames);
+
+        return builder.build();
     }
 
+    @Transactional(readOnly = true)
     public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
+    @Transactional(readOnly = true)
     public UserDTO getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -226,8 +241,15 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    public UserDTO getUserByUsername(String username) {
+        User user = userRepository.findByUsernameWithRestaurants(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return convertToDTO(user);
+    }
+
+    @Transactional(readOnly = true)
     public UserDTO login(LoginRequest loginRequest) {
-        User user = userRepository.findByUsername(loginRequest.getUsername())
+        User user = userRepository.findByUsernameWithRestaurants(loginRequest.getUsername())
                 .orElseThrow(() -> new RuntimeException("등록되지 않은 아이디입니다."));
 
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
@@ -275,11 +297,6 @@ public class UserService {
         return convertToDTO(userRepository.save(user));
     }
 
-    public User getUserByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-    }
-
     public boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
     }
@@ -294,5 +311,56 @@ public class UserService {
 
     public long getUserCount() {
         return userRepository.count();
+    }
+
+    @Transactional
+    public UserDTO updateUserProfile(String username, UserUpdateDTO userUpdateDTO) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+        // 이메일 변경 (선택 사항)
+        if (userUpdateDTO.getEmail() != null && !userUpdateDTO.getEmail().isEmpty()) {
+            user.setEmail(userUpdateDTO.getEmail());
+        }
+
+        // 이름 변경 (선택 사항)
+        if (userUpdateDTO.getName() != null && !userUpdateDTO.getName().isEmpty()) {
+            user.setName(userUpdateDTO.getName());
+        }
+
+        // 비밀번호 변경 (선택 사항)
+        if (userUpdateDTO.getNewPassword() != null && !userUpdateDTO.getNewPassword().isEmpty()) {
+            if (userUpdateDTO.getCurrentPassword() == null || !passwordEncoder.matches(userUpdateDTO.getCurrentPassword(), user.getPassword())) {
+                throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+            }
+            user.setPassword(passwordEncoder.encode(userUpdateDTO.getNewPassword()));
+        }
+
+        User updatedUser = userRepository.save(user);
+        return convertToDTO(updatedUser);
+    }
+
+    public User createUserEntity(UserDTO userDTO) {
+        User user = new User();
+        user.setUsername(userDTO.getUsername());
+        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        user.setName(userDTO.getName());
+        user.setEmail(userDTO.getEmail());
+        user.setPhone(userDTO.getPhone());
+        user.setAddress(userDTO.getAddress());
+        user.setRole(userDTO.getRole());
+        user.setEnabled(true);
+        user.setPoints(0);
+        return user;
+    }
+
+    public void saveUser(User user) {
+        userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
+    public User getUserEntityByUsername(String username) {
+        return userRepository.findByUsernameWithRestaurants(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 } 

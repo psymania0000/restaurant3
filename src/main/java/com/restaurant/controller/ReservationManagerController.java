@@ -31,7 +31,7 @@ public class ReservationManagerController {
             @RequestParam(required = false) String status,
             Model model) {
         
-        RestaurantDTO restaurant = restaurantService.getRestaurantByManagerEmail(userDetails.getUsername());
+        RestaurantDTO restaurant = restaurantService.getRestaurantByEmail(userDetails.getUsername());
         List<ReservationDTO> reservations;
         
         if (status != null) {
@@ -58,7 +58,7 @@ public class ReservationManagerController {
             RedirectAttributes redirectAttributes) {
         
         try {
-            RestaurantDTO restaurant = restaurantService.getRestaurantByManagerEmail(userDetails.getUsername());
+            RestaurantDTO restaurant = restaurantService.getRestaurantByEmail(userDetails.getUsername());
             ReservationDTO reservation = reservationService.getReservationById(id);
             
             // 예약이 해당 레스토랑의 것인지 확인
@@ -83,7 +83,7 @@ public class ReservationManagerController {
             RedirectAttributes redirectAttributes) {
         
         try {
-            RestaurantDTO restaurant = restaurantService.getRestaurantByManagerEmail(userDetails.getUsername());
+            RestaurantDTO restaurant = restaurantService.getRestaurantByEmail(userDetails.getUsername());
             ReservationDTO reservation = reservationService.getReservationById(id);
             
             // 예약이 해당 레스토랑의 것인지 확인

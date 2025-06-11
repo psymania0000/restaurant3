@@ -20,10 +20,8 @@
                         <h5 class="card-title" th:text="${restaurant.name}">레스토랑 이름</h5>
                         <p class="card-text" th:text="${restaurant.description}">레스토랑 설명</p>
                         <p class="card-text">
-                            <strong>주소:</strong> <span th:text="${restaurant.address}">주소</span>
-                        </p>
-                        <p class="card-text">
-                            <strong>전화번호:</strong> <span th:text="${restaurant.phone}">전화번호</span>
+                            <strong>주소:</strong> <span th:text="${restaurant.address}">주소</span><br>
+                            <strong>전화번호:</strong> <span th:text="${restaurant.phoneNumber}">전화번호</span>
                         </p>
                         <p class="card-text">
                             <strong>영업시간:</strong> <span th:text="${restaurant.businessHours}">영업시간</span>

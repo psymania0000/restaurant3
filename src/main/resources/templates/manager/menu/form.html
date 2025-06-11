@@ -32,13 +32,13 @@
             
             <div class="mb-3">
                 <label for="category" class="form-label">카테고리</label>
+                <p th:text="'Categories size: ' + ${#lists.size(categories)}"></p>
                 <select class="form-control" id="category" name="category" required>
                     <option value="">카테고리 선택</option>
-                    <option value="APPETIZER" th:selected="${menu.category == 'APPETIZER'}">전채</option>
-                    <option value="MAIN" th:selected="${menu.category == 'MAIN'}">메인</option>
-                    <option value="SIDE" th:selected="${menu.category == 'SIDE'}">사이드</option>
-                    <option value="DESSERT" th:selected="${menu.category == 'DESSERT'}">디저트</option>
-                    <option value="BEVERAGE" th:selected="${menu.category == 'BEVERAGE'}">음료</option>
+                    <option th:each="cat : ${categories}" 
+                            th:value="${cat.name()}" 
+                            th:text="${cat.displayName}"
+                            th:selected="${menu.category == cat}"></option>
                 </select>
             </div>
             

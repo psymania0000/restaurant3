@@ -10,8 +10,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -32,13 +34,26 @@ public class ReviewController {
     }
 
     @PostMapping
-    public String createReview(@ModelAttribute ReviewDTO reviewDTO, 
+    public String createReview(@Valid @ModelAttribute ReviewDTO reviewDTO,
+                             BindingResult bindingResult,
                              @RequestParam Long restaurantId,
                              @AuthenticationPrincipal UserDetails userDetails,
                              RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("errorMessage", bindingResult.getAllErrors().get(0).getDefaultMessage());
+            return "redirect:/reviews/new?restaurantId=" + restaurantId;
+        }
+        
         reviewService.createReview(reviewDTO, restaurantId, userDetails.getUsername());
         redirectAttributes.addFlashAttribute("message", "리뷰가 등록되었습니다.");
         return "redirect:/restaurants/" + restaurantId;
+    }
+
+    @GetMapping("/new")
+    public String newReviewForm(@RequestParam Long restaurantId, Model model) {
+        model.addAttribute("review", new ReviewDTO());
+        model.addAttribute("restaurantId", restaurantId);
+        return "review/form";
     }
 
     @GetMapping("/user")
@@ -55,14 +70,21 @@ public class ReviewController {
             throw new AccessDeniedException("리뷰를 수정할 권한이 없습니다.");
         }
         model.addAttribute("review", review);
-        return "review/edit";
+        model.addAttribute("restaurantId", review.getRestaurantId());
+        return "review/form";
     }
 
     @PostMapping("/{id}")
-    public String updateReview(@PathVariable Long id, 
-                             @ModelAttribute ReviewDTO reviewDTO,
+    public String updateReview(@PathVariable Long id,
+                             @Valid @ModelAttribute ReviewDTO reviewDTO,
+                             BindingResult bindingResult,
                              @AuthenticationPrincipal UserDetails userDetails,
                              RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("errorMessage", bindingResult.getAllErrors().get(0).getDefaultMessage());
+            return "redirect:/reviews/" + id + "/edit";
+        }
+        
         reviewService.updateReview(id, reviewDTO, userDetails.getUsername());
         redirectAttributes.addFlashAttribute("message", "리뷰가 수정되었습니다.");
         return "redirect:/reviews/" + id;

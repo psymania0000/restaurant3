@@ -2,6 +2,7 @@ package com.restaurant.service;
 
 import com.restaurant.dto.MenuDTO;
 import com.restaurant.entity.Menu;
+import com.restaurant.entity.MenuCategory;
 import com.restaurant.entity.Restaurant;
 import com.restaurant.repository.MenuRepository;
 import com.restaurant.repository.RestaurantRepository;
@@ -42,7 +43,7 @@ public class MenuService {
         Menu menu = new Menu();
         menu.setName(menuDTO.getName());
         menu.setDescription(menuDTO.getDescription());
-        menu.setPrice(menuDTO.getPrice().doubleValue());
+        menu.setPrice(menuDTO.getPrice());
         menu.setCategory(menuDTO.getCategory());
         menu.setAvailable(menuDTO.getAvailable() != null ? menuDTO.getAvailable() : true);
         
@@ -94,7 +95,7 @@ public class MenuService {
 
         menu.setName(menuDTO.getName());
         menu.setDescription(menuDTO.getDescription());
-        menu.setPrice(menuDTO.getPrice().doubleValue());
+        menu.setPrice(menuDTO.getPrice());
         menu.setCategory(menuDTO.getCategory());
         menu.setAvailable(menuDTO.getAvailable());
 
@@ -124,7 +125,7 @@ public class MenuService {
                 .id(menu.getId())
                 .name(menu.getName())
                 .description(menu.getDescription())
-                .price(BigDecimal.valueOf(menu.getPrice()))
+                .price(menu.getPrice())
                 .category(menu.getCategory())
                 .available(menu.getAvailable())
                 .restaurantId(menu.getRestaurant().getId())

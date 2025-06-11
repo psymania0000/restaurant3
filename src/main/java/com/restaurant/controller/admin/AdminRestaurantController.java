@@ -3,6 +3,7 @@ package com.restaurant.controller.admin;
 import com.restaurant.dto.ReviewDTO;
 import com.restaurant.dto.RestaurantDTO;
 import com.restaurant.dto.MenuDTO;
+import com.restaurant.entity.MenuCategory;
 import com.restaurant.service.RestaurantService;
 import com.restaurant.service.ReviewService;
 import com.restaurant.service.MenuService;
@@ -19,6 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import jakarta.annotation.PostConstruct;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,10 +28,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
+import java.util.Arrays;
 
 @Controller
 @RequestMapping("/admin/restaurants")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
 public class AdminRestaurantController {
 
     private final RestaurantService restaurantService;
@@ -67,7 +71,9 @@ public class AdminRestaurantController {
 
     // 식당 추가 폼
     @GetMapping("/new")
-    public String newRestaurantForm() {
+    public String newRestaurantForm(Model model, org.springframework.security.web.csrf.CsrfToken csrfToken) {
+        model.addAttribute("restaurantDTO", new RestaurantDTO());
+        model.addAttribute("_csrf", csrfToken);
         return "admin/restaurant/form";
     }
 
@@ -76,6 +82,7 @@ public class AdminRestaurantController {
     public String newMenuForm(@PathVariable Long id, Model model) {
         model.addAttribute("restaurant", restaurantService.getRestaurantById(id));
         model.addAttribute("menu", new MenuDTO());
+        model.addAttribute("categories", Arrays.asList(MenuCategory.values()));
         return "admin/restaurant/menu-form";
     }
 
@@ -84,6 +91,7 @@ public class AdminRestaurantController {
     public String editMenuForm(@PathVariable Long id, @PathVariable Long menuId, Model model) {
         model.addAttribute("restaurant", restaurantService.getRestaurantById(id));
         model.addAttribute("menu", menuService.getMenuById(menuId));
+        model.addAttribute("categories", Arrays.asList(MenuCategory.values()));
         return "admin/restaurant/menu-form";
     }
 
@@ -91,10 +99,17 @@ public class AdminRestaurantController {
     @PostMapping("/{id}/menus")
     public String createMenu(@PathVariable Long id,
                            @ModelAttribute MenuDTO menuDTO,
-                           @RequestParam("image") MultipartFile image) {
-        menuDTO.setRestaurantId(id);
-        menuService.createMenu(menuDTO, image);
-        return "redirect:/admin/restaurants/" + id + "/menus";
+                           @RequestParam(value = "image", required = false) MultipartFile image,
+                           RedirectAttributes redirectAttributes) {
+        try {
+            menuDTO.setRestaurantId(id);
+            menuService.createMenu(menuDTO, image);
+            redirectAttributes.addFlashAttribute("successMessage", "메뉴가 성공적으로 추가되었습니다.");
+            return "redirect:/admin/restaurants/" + id;
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "메뉴 추가 중 오류가 발생했습니다: " + e.getMessage());
+            return "redirect:/admin/restaurants/" + id + "/menus/new";
+        }
     }
 
     // 식당 추가 처리
@@ -118,10 +133,10 @@ public class AdminRestaurantController {
                 throw new IllegalArgumentException("카테고리는 필수 입력 항목입니다.");
             }
 
-            // 현재 로그인한 관리자의 이메일을 설정
-            restaurantDTO.setAdminEmail(userDetails.getUsername());
+            // 현재 로그인한 관리자의 이메일을 email로 설정
+            restaurantDTO.setEmail(userDetails.getUsername());
 
-            RestaurantDTO createdRestaurant = restaurantService.createRestaurant(restaurantDTO, image);
+            RestaurantDTO createdRestaurant = restaurantService.createRestaurant(restaurantDTO, image, userDetails.getUsername());
             redirectAttributes.addFlashAttribute("successMessage", "식당이 성공적으로 등록되었습니다.");
             return "redirect:/admin/restaurants";
         } catch (Exception e) {
@@ -148,7 +163,7 @@ public class AdminRestaurantController {
     }
 
     // 식당 삭제 처리
-    @PostMapping("/{id}/delete")
+    @DeleteMapping("/{id}/delete")
     public String deleteRestaurant(@PathVariable Long id) {
         restaurantService.deleteRestaurant(id);
         return "redirect:/admin/restaurants";
@@ -159,18 +174,31 @@ public class AdminRestaurantController {
     public String updateMenu(@PathVariable Long id,
                            @PathVariable Long menuId,
                            @ModelAttribute MenuDTO menuDTO,
-                           @RequestParam(value = "image", required = false) MultipartFile image) {
-        menuDTO.setId(menuId);
-        menuDTO.setRestaurantId(id);
-        menuService.updateMenu(menuId, menuDTO, image);
-        return "redirect:/admin/restaurants/" + id + "/menus";
+                           @RequestParam(value = "image", required = false) MultipartFile image,
+                           RedirectAttributes redirectAttributes) {
+        try {
+            menuDTO.setRestaurantId(id);
+            menuService.updateMenu(menuId, menuDTO, image);
+            redirectAttributes.addFlashAttribute("successMessage", "메뉴가 성공적으로 수정되었습니다.");
+            return "redirect:/admin/restaurants/" + id;
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "메뉴 수정 중 오류가 발생했습니다: " + e.getMessage());
+            return "redirect:/admin/restaurants/" + id + "/menus/" + menuId + "/edit";
+        }
     }
 
     // 메뉴 삭제 처리
     @PostMapping("/{id}/menus/{menuId}/delete")
-    public String deleteMenu(@PathVariable Long id, @PathVariable Long menuId) {
-        menuService.deleteMenu(menuId);
-        return "redirect:/admin/restaurants/" + id + "/menus";
+    public String deleteMenu(@PathVariable Long id,
+                           @PathVariable Long menuId,
+                           RedirectAttributes redirectAttributes) {
+        try {
+            menuService.deleteMenu(menuId);
+            redirectAttributes.addFlashAttribute("successMessage", "메뉴가 성공적으로 삭제되었습니다.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "메뉴 삭제 중 오류가 발생했습니다: " + e.getMessage());
+        }
+        return "redirect:/admin/restaurants/" + id;
     }
 
     // 후기 삭제 처리 (수정)
@@ -179,7 +207,7 @@ public class AdminRestaurantController {
                              @PathVariable Long reviewId,
                              @AuthenticationPrincipal UserDetails userDetails,
                              RedirectAttributes redirectAttributes) {
-        reviewService.deleteReview(reviewId, userDetails.getUsername());
+        reviewService.deleteReview(reviewId, userDetails.getUsername(), userDetails.getAuthorities());
         redirectAttributes.addFlashAttribute("message", "리뷰가 삭제되었습니다.");
         return "redirect:/admin/restaurants/" + restaurantId;
     }

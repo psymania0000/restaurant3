@@ -3,7 +3,8 @@ package com.restaurant.model;
 public enum UserRole {
     USER("ROLE_USER"),
     MANAGER("ROLE_MANAGER"),
-    ADMIN("ROLE_ADMIN");
+    ADMIN("ROLE_ADMIN"),
+    SUPER_ADMIN("ROLE_SUPER_ADMIN");
 
     private final String role;
 

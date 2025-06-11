@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>맛집 목록</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .restaurant-card {
+            transition: transform 0.3s;
+            height: 100%;
+        }
+        .restaurant-card:hover {
+            transform: translateY(-5px);
+        }
+        .restaurant-image {
+            height: 200px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+    <div class="container py-5">
+        <h2 class="text-center mb-4">등록된 식당</h2>
+        <div class="row" id="restaurant-list">
+            <div class="col-md-4 mb-4" th:each="restaurant : ${restaurants}">
+                <div class="card restaurant-card">
+                    <img th:if="${restaurant.imageUrl}" th:src="${restaurant.imageUrl}" class="card-img-top restaurant-image" alt="식당 이미지">
+                    <div th:unless="${restaurant.imageUrl}" class="card-img-top restaurant-image bg-light d-flex align-items-center justify-content-center">
+                        <span class="text-muted">이미지 없음</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${restaurant.name}">식당 이름</h5>
+                        <p class="card-text" th:text="${restaurant.description}">식당 설명</p>
+                        <p class="card-text">
+                            <small class="text-muted" th:text="${restaurant.address}">식당 주소</small>
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary" th:text="${restaurant.category}">카테고리</span>
+                            <a th:href="@{/restaurants/{id}(id=${restaurant.id})}" class="btn btn-primary">상세 보기</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

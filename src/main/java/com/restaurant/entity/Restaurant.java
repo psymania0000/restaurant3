@@ -4,12 +4,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalTime;
 import java.time.LocalDateTime;
+import java.util.Set;
+import java.util.HashSet;
 
 @Entity
 @Table(name = "restaurants")
@@ -17,9 +20,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Restaurant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(nullable = false)
@@ -28,8 +33,8 @@ public class Restaurant {
     @Column(nullable = false)
     private String address;
 
-    @Column(nullable = false)
-    private String phone;
+    @Column(name = "phone_number", nullable = false)
+    private String phoneNumber;
 
     @Column(nullable = false)
     private String email;
@@ -46,21 +51,19 @@ public class Restaurant {
     @Column(name = "image_url")
     private String imageUrl;
 
-    @Column(name = "manager_email", unique = true)
-    private String managerEmail;
-
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @Column(name = "admin_email")
-    private String adminEmail;
-
     @Column(name = "is_open")
     @Builder.Default
     private boolean open = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_id")
+    private User manager;
 
     @PrePersist
     protected void onCreate() {
@@ -79,12 +82,6 @@ public class Restaurant {
     @Builder.Default
     private Integer reservationInterval = 30; // 예약 간격 (분 단위)
 
-    @OneToOne
-    @JoinColumn(name = "manager_id")
-    private User manager; // 레스토랑 매니저 (User 엔티티와의 관계)
-
-    // TODO: Add other relevant fields like operating hours, category, etc.
-
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Menu> menus = new ArrayList<>();
@@ -96,4 +93,7 @@ public class Restaurant {
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Reservation> reservations = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "managedRestaurants")
+    private Set<User> managers = new HashSet<>();
 } 

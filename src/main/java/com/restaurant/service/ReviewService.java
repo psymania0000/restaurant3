@@ -73,7 +73,9 @@ public class ReviewService {
 
     @Transactional(readOnly = true)
     public List<ReviewDTO> getUserReviews(Long userId) {
-        return reviewRepository.findByUserId(userId).stream()
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+        return reviewRepository.findByUserWithRestaurant(user).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
@@ -94,22 +96,11 @@ public class ReviewService {
         return convertToDTO(updatedReview);
     }
 
-    @Transactional
-    public void deleteReview(Long id, String username) {
-        Review review = reviewRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("리뷰를 찾을 수 없습니다."));
-        
-        if (!review.getUser().getUsername().equals(username)) {
-            throw new AccessDeniedException("리뷰를 삭제할 권한이 없습니다.");
-        }
-
-        reviewRepository.delete(review);
-    }
-
+    @Transactional(readOnly = true)
     public List<ReviewDTO> getReviewsByUsername(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
-        return reviewRepository.findByUser(user).stream()
+        return reviewRepository.findByUserWithRestaurant(user).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
@@ -117,6 +108,41 @@ public class ReviewService {
     @Transactional(readOnly = true)
     public long getReviewCount() {
         return reviewRepository.count();
+    }
+
+    @Transactional
+    public void deleteReview(Long reviewId, String username) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new EntityNotFoundException("리뷰를 찾을 수 없습니다."));
+        
+        if (!review.getUser().getUsername().equals(username)) {
+            throw new AccessDeniedException("리뷰를 삭제할 권한이 없습니다.");
+        }
+        
+        try {
+            reviewRepository.deleteById(reviewId);
+        } catch (Exception e) {
+            throw new RuntimeException("리뷰 삭제 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
+    @Transactional
+    public void deleteReview(Long reviewId, String username, java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> authorities) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new EntityNotFoundException("리뷰를 찾을 수 없습니다."));
+        
+        boolean isAdmin = authorities.stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_SUPER_ADMIN"));
+        
+        if (!isAdmin && !review.getUser().getUsername().equals(username)) {
+            throw new AccessDeniedException("리뷰를 삭제할 권한이 없습니다.");
+        }
+        
+        try {
+            reviewRepository.deleteById(reviewId);
+        } catch (Exception e) {
+            throw new RuntimeException("리뷰 삭제 중 오류가 발생했습니다: " + e.getMessage());
+        }
     }
 
     private ReviewDTO convertToDTO(Review review) {
@@ -127,6 +153,7 @@ public class ReviewService {
                 .restaurantId(review.getRestaurant().getId())
                 .restaurantName(review.getRestaurant().getName())
                 .author(review.getUser().getUsername())
+                .userId(review.getUser().getId())
                 .createdAt(review.getCreatedAt())
                 .updatedAt(review.getUpdatedAt())
                 .build();

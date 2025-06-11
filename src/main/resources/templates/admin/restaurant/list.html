@@ -18,7 +18,7 @@
                     <th>ID</th>
                     <th>Name</th>
                     <th>Address</th>
-                    <th>Phone</th>
+                    <th>Phone Number</th>
                     <th>Image</th>
                     <th>Actions</th>
                 </tr>
@@ -28,7 +28,7 @@
                     <td th:text="${restaurant.id}">1</td>
                     <td th:text="${restaurant.name}">Restaurant Name</td>
                     <td th:text="${restaurant.address}">Restaurant Address</td>
-                    <td th:text="${restaurant.phone}">Restaurant Phone</td>
+                    <td th:text="${restaurant.phoneNumber}">Restaurant Phone</td>
                     <td><img th:src="${restaurant.imageUrl}" alt="Restaurant Image" style="width: 100px; height: auto;"></td>
                     <td>
                         <a th:href="@{/admin/restaurants/{id}(id=${restaurant.id})}" class="btn btn-info btn-sm">View</a>

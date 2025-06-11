@@ -18,7 +18,7 @@ public class RestaurantDTO {
     private Long id;
     private String name;
     private String address;
-    private String phone;
+    private String phoneNumber;
     private String email;
     private String description;
     private String imageUrl;
@@ -27,7 +27,6 @@ public class RestaurantDTO {
     private String category;
     @Builder.Default
     private boolean open = true;
-    private String adminEmail;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     @Builder.Default

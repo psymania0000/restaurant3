@@ -8,6 +8,7 @@ import com.restaurant.service.RestaurantService;
 import com.restaurant.service.ReviewService;
 import com.restaurant.service.UserService;
 import com.restaurant.entity.User;
+import com.restaurant.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,9 +46,9 @@ public class RestaurantController {
 
         // 사용자의 현재 포인트 정보 추가
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof com.restaurant.entity.User) {
-            com.restaurant.entity.User currentUser = (com.restaurant.entity.User) authentication.getPrincipal();
-            model.addAttribute("userPoints", currentUser.getPoints());
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            model.addAttribute("userPoints", userDetails.getUser().getPoints());
         } else {
             model.addAttribute("userPoints", 0); // 비로그인 시 0 포인트
         }
@@ -55,51 +56,11 @@ public class RestaurantController {
         return "restaurant/detail";
     }
 
-    @GetMapping("/api/{id}")
-    public ResponseEntity<RestaurantDTO> getRestaurantById(@PathVariable Long id) {
-        RestaurantDTO restaurant = restaurantService.getRestaurantById(id);
-        return ResponseEntity.ok(restaurant);
-    }
-
-    @GetMapping
-    public ResponseEntity<List<RestaurantDTO>> getAllRestaurants() {
-        List<RestaurantDTO> restaurants = restaurantService.getAllRestaurants();
-        return ResponseEntity.ok(restaurants);
-    }
-
-    @PostMapping
-    public ResponseEntity<RestaurantDTO> createRestaurant(
-            @RequestPart("restaurant") RestaurantDTO restaurantDTO,
-            @RequestPart(value = "image", required = false) MultipartFile image) {
-        RestaurantDTO createdRestaurant = restaurantService.createRestaurant(restaurantDTO, image);
-        return ResponseEntity.ok(createdRestaurant);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<RestaurantDTO> updateRestaurant(
-            @PathVariable Long id,
-            @RequestPart("restaurant") RestaurantDTO restaurantDTO,
-            @RequestPart(value = "image", required = false) MultipartFile image) {
-        RestaurantDTO updatedRestaurant = restaurantService.updateRestaurant(id, restaurantDTO, image);
-        return ResponseEntity.ok(updatedRestaurant);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRestaurant(@PathVariable Long id) {
-        restaurantService.deleteRestaurant(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/{id}/menus")
-    public ResponseEntity<List<MenuDTO>> getRestaurantMenus(@PathVariable Long id) {
-        List<MenuDTO> menus = menuService.getMenusByRestaurantId(id);
-        return ResponseEntity.ok(menus);
-    }
-
-    @GetMapping("/{id}/reviews")
-    public ResponseEntity<List<ReviewDTO>> getRestaurantReviews(@PathVariable Long id) {
-        List<ReviewDTO> reviews = reviewService.getReviewsByRestaurantId(id);
-        return ResponseEntity.ok(reviews);
+    // 맛집 목록 페이지 (HTML)
+    @GetMapping("")
+    public String restaurantListPage(Model model) {
+        model.addAttribute("restaurants", restaurantService.getAllRestaurants());
+        return "restaurant/list";
     }
 
     @GetMapping("/new")
@@ -130,5 +91,23 @@ public class RestaurantController {
             @RequestParam String email) {
         RestaurantDTO updatedRestaurant = restaurantService.updateRestaurantInfo(id, name, address, phone, email);
         return ResponseEntity.ok(updatedRestaurant);
+    }
+}
+
+// API 전용 컨트롤러 분리
+@RestController
+@RequestMapping("/api/restaurants")
+@RequiredArgsConstructor
+class RestaurantApiController {
+    private final RestaurantService restaurantService;
+
+    @GetMapping("")
+    public List<RestaurantDTO> getAllRestaurants() {
+        return restaurantService.getAllRestaurants();
+    }
+
+    @GetMapping("/{id}")
+    public RestaurantDTO getRestaurantById(@PathVariable Long id) {
+        return restaurantService.getRestaurantById(id);
     }
 } 

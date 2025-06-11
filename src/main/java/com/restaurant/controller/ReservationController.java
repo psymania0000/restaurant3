@@ -30,35 +30,37 @@ public class ReservationController {
     private final UserService userService;
 
     @GetMapping
-    public String showReservationForm(@PathVariable Long restaurantId, Model model, @AuthenticationPrincipal UserDetails userDetails) {
+    public String showReservationForm(
+            @PathVariable Long restaurantId,
+            @RequestParam(required = false) String date,
+            Model model,
+            @AuthenticationPrincipal UserDetails userDetails) {
         RestaurantDTO restaurant = restaurantService.getRestaurantById(restaurantId);
         model.addAttribute("restaurant", restaurant);
 
         if (userDetails != null) {
-            User user = userService.getUserByUsername(userDetails.getUsername());
+            User user = userService.getUserEntityByUsername(userDetails.getUsername());
             UserDTO userDTO = userService.convertToDTO(user);
             model.addAttribute("user", userDTO);
         } else {
             return "redirect:/login";
         }
 
-        // 예약 시간 선택을 위한 기본 데이터 (예시: 오늘부터 일주일)
-        // 초기 로딩 시에는 현재 날짜를 기준으로 사용 가능한 시간을 가져옵니다.
-        LocalDateTime today = LocalDateTime.now();
-        int defaultPartySize = 1; // 또는 사용자가 입력한 값
+        // 날짜 파라미터가 있으면 해당 날짜의 시간을 가져오고, 없으면 오늘 날짜 사용
+        LocalDateTime selectedDate;
+        if (date != null && !date.isEmpty()) {
+            selectedDate = LocalDateTime.parse(date + "T00:00:00");
+        } else {
+            selectedDate = LocalDateTime.now();
+        }
 
         // 사용 가능한 시간을 가져옵니다
-        List<LocalDateTime> availableTimes = reservationService.getAvailableReservationTimes(restaurantId);
+        List<LocalDateTime> availableTimes = reservationService.getAvailableReservationTimes(restaurantId, selectedDate);
         model.addAttribute("availableTimes", availableTimes);
+        model.addAttribute("selectedDate", selectedDate);
 
         ReservationDTO reservationDto = new ReservationDTO();
         reservationDto.setRestaurantId(restaurantId);
-        // 기본값 설정 (선택 사항)
-        // reservationDto.setNumberOfPeople(defaultPartySize);
-        // if (!availableTimes.isEmpty()) {
-        //     reservationDto.setReservationTime(availableTimes.get(0));
-        // }
-
         model.addAttribute("reservationDto", reservationDto);
 
         return "restaurant/reserve";
@@ -75,7 +77,7 @@ public class ReservationController {
         }
 
         try {
-            User user = userService.getUserByUsername(userDetails.getUsername());
+            User user = userService.getUserEntityByUsername(userDetails.getUsername());
             UserDTO userDTO = userService.convertToDTO(user);
             reservationDto.setUserId(userDTO.getId());
             reservationDto.setRestaurantId(restaurantId);
@@ -111,7 +113,7 @@ public class ReservationController {
         if (userDetails == null) {
             return ResponseEntity.badRequest().build();
         }
-        User user = userService.getUserByUsername(userDetails.getUsername());
+        User user = userService.getUserEntityByUsername(userDetails.getUsername());
         ReservationDTO updatedReservation = reservationService.updateReservationStatus(id, reservationDTO.getStatus());
         return ResponseEntity.ok(updatedReservation);
     }

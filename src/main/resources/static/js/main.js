@@ -1,27 +1,55 @@
 // 식당 목록 로드
 function loadRestaurants() {
-    $.get('/api/restaurants', function(restaurants) {
-        const container = $('#popular-restaurants');
-        container.empty();
-        
-        restaurants.forEach(restaurant => {
-            container.append(`
-                <div class="col-md-6 mb-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">${restaurant.name}</h5>
-                            <p class="card-text">${restaurant.description}</p>
-                            <p class="card-text">
-                                <small class="text-muted">${restaurant.address}</small>
-                            </p>
-                            <button class="btn btn-primary" onclick="showReservationForm(${restaurant.id})">
-                                예약하기
-                            </button>
+    $.ajax({
+        url: '/api/restaurants',
+        method: 'GET',
+        dataType: 'json',
+        success: function(restaurants) {
+            const container = $('#restaurant-list');
+            container.empty();
+            
+            if (!Array.isArray(restaurants)) {
+                console.error('식당 데이터가 배열 형식이 아닙니다:', restaurants);
+                return;
+            }
+            
+            restaurants.forEach(restaurant => {
+                const imageHtml = restaurant.imageUrl 
+                    ? `<img src="${restaurant.imageUrl}" class="card-img-top restaurant-image" alt="식당 이미지">`
+                    : `<div class="card-img-top restaurant-image bg-light d-flex align-items-center justify-content-center">
+                         <span class="text-muted">이미지 없음</span>
+                       </div>`;
+
+                container.append(`
+                    <div class="col-md-4 mb-4">
+                        <div class="card restaurant-card">
+                            ${imageHtml}
+                            <div class="card-body">
+                                <h5 class="card-title">${restaurant.name || '이름 없음'}</h5>
+                                <p class="card-text">${restaurant.description || ''}</p>
+                                <p class="card-text">
+                                    <small class="text-muted">${restaurant.address || ''}</small>
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-primary">${restaurant.category || '카테고리 없음'}</span>
+                                    <a href="/restaurants/${restaurant.id}" class="btn btn-primary">상세 보기</a>
+                                </div>
+                            </div>
                         </div>
+                    </div>
+                `);
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error('식당 목록을 불러오는데 실패했습니다:', error);
+            $('#restaurant-list').html(`
+                <div class="col-12 text-center">
+                    <div class="alert alert-danger">
+                        식당 목록을 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.
                     </div>
                 </div>
             `);
-        });
+        }
     });
 }
 

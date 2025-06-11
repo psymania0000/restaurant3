@@ -31,7 +31,7 @@ public class ReservationApiController {
         if (userDetails == null) {
             return ResponseEntity.badRequest().build();
         }
-        User user = userService.getUserByUsername(userDetails.getUsername());
+        User user = userService.getUserEntityByUsername(userDetails.getUsername());
         ReservationDTO createdReservation = reservationService.createReservation(reservationDTO, user.getId());
         return ResponseEntity.ok(createdReservation);
     }
@@ -44,7 +44,7 @@ public class ReservationApiController {
         if (userDetails == null) {
             return ResponseEntity.badRequest().build();
         }
-        User user = userService.getUserByUsername(userDetails.getUsername());
+        User user = userService.getUserEntityByUsername(userDetails.getUsername());
         ReservationDTO updatedReservation = reservationService.updateReservationStatus(id, reservationDTO.getStatus());
         return ResponseEntity.ok(updatedReservation);
     }

@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import jakarta.persistence.EntityNotFoundException;
+import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
@@ -159,31 +160,40 @@ public class ReservationService {
     private ReservationDTO convertToDTO(Reservation reservation) {
         return ReservationDTO.builder()
                 .id(reservation.getId())
-                .userId(reservation.getUser().getId())
-                .userName(reservation.getUser().getName())
                 .restaurantId(reservation.getRestaurant().getId())
                 .restaurantName(reservation.getRestaurant().getName())
-                .numberOfPeople(reservation.getNumberOfPeople())
+                .userId(reservation.getUser().getId())
+                .userName(reservation.getUser().getUsername())
                 .reservationTime(reservation.getReservationTime())
-                .request(reservation.getRequest())
+                .numberOfPeople(reservation.getNumberOfPeople())
                 .status(reservation.getStatus())
-                .pointsToUse(reservation.getPointsUsed())
+                .specialRequests(reservation.getSpecialRequests())
+                .createdAt(reservation.getCreatedAt())
+                .updatedAt(reservation.getUpdatedAt())
                 .build();
     }
 
      // 특정 레스토랑의 예약 가능한 시간 목록 조회 (간단 예시)
      @Transactional(readOnly = true)
-     public List<LocalDateTime> getAvailableReservationTimes(Long restaurantId) {
+     public List<LocalDateTime> getAvailableReservationTimes(Long restaurantId, LocalDateTime selectedDate) {
          Restaurant restaurant = restaurantRepository.findById(restaurantId)
                  .orElseThrow(() -> new EntityNotFoundException("Restaurant not found with id: " + restaurantId));
 
-         // 여기서는 단순히 현재 시간 이후 1시간 간격으로 5개 시간을 예시로 제공
-         // 실제로는 레스토랑 운영 시간, 좌석 상황 등을 고려하여 복잡한 로직이 필요
-         LocalDateTime now = LocalDateTime.now();
+         // 선택된 날짜의 시작 시간과 종료 시간 설정
+         LocalDateTime startTime = selectedDate.withHour(11).withMinute(0).withSecond(0).withNano(0);
+         LocalDateTime endTime = selectedDate.withHour(21).withMinute(0).withSecond(0).withNano(0);
+
+         // 30분 간격으로 예약 가능한 시간 생성
          List<LocalDateTime> availableTimes = new java.util.ArrayList<>();
-         for (int i = 0; i < 5; i++) {
-             availableTimes.add(now.plusHours(i + 1).withMinute(0).withSecond(0).withNano(0));
+         LocalDateTime currentTime = startTime;
+         while (!currentTime.isAfter(endTime)) {
+             // 현재 시간이 지난 경우는 제외
+             if (currentTime.isAfter(LocalDateTime.now())) {
+                 availableTimes.add(currentTime);
+             }
+             currentTime = currentTime.plusMinutes(30);
          }
+
          return availableTimes;
      }
 
@@ -205,5 +215,37 @@ public class ReservationService {
     @Transactional(readOnly = true)
     public long getReservationCount() {
         return reservationRepository.count();
+    }
+
+    @Transactional
+    public void updateReservation(Long id, ReservationDTO reservationDto) {
+        Reservation reservation = reservationRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("예약을 찾을 수 없습니다."));
+
+        // 날짜와 시간 합치기 (reservationDto.getReservationTime()이 LocalDateTime이면 그대로 사용)
+        reservation.setReservationTime(reservationDto.getReservationTime());
+        reservation.setNumberOfPeople(reservationDto.getNumberOfPeople());
+        reservation.setRequest(reservationDto.getRequest());
+        // 필요시 specialRequests 등 추가
+        reservationRepository.save(reservation);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReservationDTO> getReservationsByRestaurantIds(List<Long> restaurantIds) {
+        List<ReservationDTO> allReservations = new ArrayList<>();
+        for (Long restaurantId : restaurantIds) {
+            List<Reservation> reservations = reservationRepository.findByRestaurantId(restaurantId);
+            allReservations.addAll(reservations.stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList()));
+        }
+        return allReservations;
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReservationDTO> getAllReservations() {
+        return reservationRepository.findAll().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 }

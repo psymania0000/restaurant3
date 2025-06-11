@@ -3,6 +3,7 @@ package com.restaurant.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Entity
 @Data
@@ -19,10 +20,11 @@ public class Menu {
     private String description;
 
     @Column(nullable = false)
-    private Double price;
+    private BigDecimal price;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String category;
+    private MenuCategory category;
 
     @Column(nullable = false)
     private Boolean available = true;

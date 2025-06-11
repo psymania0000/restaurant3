@@ -7,6 +7,7 @@ import com.restaurant.model.ReservationStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/admin/reservations")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
 public class AdminReservationController {
 
     private final ReservationService reservationService;
@@ -29,33 +31,29 @@ public class AdminReservationController {
             @RequestParam(required = false) String status,
             Model model,
             RedirectAttributes redirectAttributes) {
-        
         try {
             if (userDetails == null) {
                 redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
                 return "redirect:/login";
             }
 
-            Long restaurantId = restaurantService.getRestaurantIdByAdminEmail(userDetails.getUsername());
             List<ReservationDTO> reservations;
-            
-            if (status != null) {
-                try {
-                    ReservationStatus reservationStatus = ReservationStatus.valueOf(status.toUpperCase());
-                    reservations = reservationService.getReservationsByRestaurantIdAndStatus(restaurantId, reservationStatus);
-                } catch (IllegalArgumentException e) {
-                    reservations = reservationService.getReservationsByRestaurantId(restaurantId);
-                }
+            if (userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN"))) {
+                // 통합관리자: 전체 예약
+                reservations = reservationService.getAllReservations();
             } else {
-                reservations = reservationService.getReservationsByRestaurantId(restaurantId);
+                // 식당 관리자: 본인 식당(들) 예약
+                List<Long> restaurantIds = restaurantService.getRestaurantIdsByEmail(userDetails.getUsername());
+                if (restaurantIds.isEmpty()) {
+                    redirectAttributes.addFlashAttribute("errorMessage", "관리 중인 식당이 없습니다.");
+                    return "redirect:/admin/dashboard";
+                }
+                reservations = reservationService.getReservationsByRestaurantIds(restaurantIds);
             }
-            
+
             model.addAttribute("reservations", reservations);
             model.addAttribute("status", status);
             return "admin/reservations/list";
-        } catch (EntityNotFoundException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/admin/dashboard";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "예약 목록을 불러오는 중 오류가 발생했습니다: " + e.getMessage());
             return "redirect:/admin/dashboard";
@@ -67,18 +65,23 @@ public class AdminReservationController {
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails userDetails,
             RedirectAttributes redirectAttributes) {
-        
         try {
             if (userDetails == null) {
                 redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
                 return "redirect:/login";
             }
 
-            Long restaurantId = restaurantService.getRestaurantIdByAdminEmail(userDetails.getUsername());
-            ReservationDTO reservation = reservationService.getReservationById(id);
-            
-            if (!reservation.getRestaurantId().equals(restaurantId)) {
-                throw new EntityNotFoundException("해당 예약을 찾을 수 없습니다.");
+            boolean isSuperAdmin = userDetails.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN"));
+
+            if (!isSuperAdmin) {
+                // Regular admin: check restaurant ownership
+                Long restaurantId = restaurantService.getRestaurantIdByEmail(userDetails.getUsername());
+                ReservationDTO reservation = reservationService.getReservationById(id);
+                
+                if (!reservation.getRestaurantId().equals(restaurantId)) {
+                    throw new EntityNotFoundException("해당 예약을 찾을 수 없습니다.");
+                }
             }
             
             reservationService.confirmReservation(id);
@@ -97,18 +100,23 @@ public class AdminReservationController {
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails userDetails,
             RedirectAttributes redirectAttributes) {
-        
         try {
             if (userDetails == null) {
                 redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
                 return "redirect:/login";
             }
 
-            Long restaurantId = restaurantService.getRestaurantIdByAdminEmail(userDetails.getUsername());
-            ReservationDTO reservation = reservationService.getReservationById(id);
-            
-            if (!reservation.getRestaurantId().equals(restaurantId)) {
-                throw new EntityNotFoundException("해당 예약을 찾을 수 없습니다.");
+            boolean isSuperAdmin = userDetails.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN"));
+
+            if (!isSuperAdmin) {
+                // Regular admin: check restaurant ownership
+                Long restaurantId = restaurantService.getRestaurantIdByEmail(userDetails.getUsername());
+                ReservationDTO reservation = reservationService.getReservationById(id);
+                
+                if (!reservation.getRestaurantId().equals(restaurantId)) {
+                    throw new EntityNotFoundException("해당 예약을 찾을 수 없습니다.");
+                }
             }
             
             reservationService.cancelReservation(id);
@@ -134,11 +142,17 @@ public class AdminReservationController {
                 return "redirect:/login";
             }
 
-            Long restaurantId = restaurantService.getRestaurantIdByAdminEmail(userDetails.getUsername());
-            ReservationDTO reservation = reservationService.getReservationById(id);
-            
-            if (!reservation.getRestaurantId().equals(restaurantId)) {
-                throw new EntityNotFoundException("해당 예약을 찾을 수 없습니다.");
+            boolean isSuperAdmin = userDetails.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN"));
+
+            if (!isSuperAdmin) {
+                // Regular admin: check restaurant ownership
+                Long restaurantId = restaurantService.getRestaurantIdByEmail(userDetails.getUsername());
+                ReservationDTO reservation = reservationService.getReservationById(id);
+                
+                if (!reservation.getRestaurantId().equals(restaurantId)) {
+                    throw new EntityNotFoundException("해당 예약을 찾을 수 없습니다.");
+                }
             }
 
             ReservationStatus reservationStatus = ReservationStatus.valueOf(status.toUpperCase());

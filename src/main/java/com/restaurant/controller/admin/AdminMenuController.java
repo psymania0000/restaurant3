@@ -1,9 +1,12 @@
 package com.restaurant.controller.admin;
 
 import com.restaurant.dto.MenuDTO;
+import com.restaurant.dto.RestaurantDTO;
 import com.restaurant.service.MenuService;
 import com.restaurant.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -19,6 +22,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminMenuController {
 
+    private static final Logger log = LoggerFactory.getLogger(AdminMenuController.class);
+
     private final MenuService menuService;
     private final RestaurantService restaurantService;
 
@@ -31,15 +36,11 @@ public class AdminMenuController {
                 return "redirect:/login";
             }
 
-            Long restaurantId = restaurantService.getRestaurantIdByAdminEmail(userDetails.getUsername());
-            List<MenuDTO> menus = menuService.getMenusByRestaurantId(restaurantId);
-            model.addAttribute("menus", menus);
-            model.addAttribute("restaurantId", restaurantId);
-            return "admin/menus/list";
-        } catch (EntityNotFoundException e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/admin/dashboard";
+            List<RestaurantDTO> restaurants = restaurantService.getAllRestaurants();
+            model.addAttribute("restaurants", restaurants);
+            return "admin/menus";
         } catch (Exception e) {
+            log.error("메뉴 목록 조회 중 오류 발생", e);
             redirectAttributes.addFlashAttribute("error", "메뉴 목록을 불러오는 중 오류가 발생했습니다: " + e.getMessage());
             return "redirect:/admin/dashboard";
         }
@@ -54,17 +55,22 @@ public class AdminMenuController {
     // 메뉴 추가 폼
     @GetMapping("/new")
     public String newMenuForm(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        Long restaurantId = restaurantService.getRestaurantIdByAdminEmail(userDetails.getUsername());
+        Long restaurantId = restaurantService.getRestaurantIdByEmail(userDetails.getUsername());
+        RestaurantDTO restaurant = restaurantService.getRestaurantById(restaurantId);
         MenuDTO menuDTO = new MenuDTO();
         menuDTO.setRestaurantId(restaurantId);
         model.addAttribute("menu", menuDTO);
-        return "admin/menus/form";
+        List<String> categories = List.of("한식", "중식", "일식", "양식", "아시안", "디저트", "음료");
+        model.addAttribute("categories", categories);
+        model.addAttribute("restaurant", restaurant);
+        return "admin/restaurant/menu-form";
     }
 
     // 메뉴 추가 처리
     @PostMapping
     public String createMenu(@ModelAttribute MenuDTO menuDTO, @RequestParam(required = false) MultipartFile image, RedirectAttributes redirectAttributes) {
         try {
+            log.debug("받은 메뉴: {}", menuDTO);
             menuService.createMenu(menuDTO, image);
             redirectAttributes.addFlashAttribute("message", "메뉴가 생성되었습니다.");
         } catch (Exception e) {
@@ -76,8 +82,13 @@ public class AdminMenuController {
     // 메뉴 수정 폼
     @GetMapping("/{id}/edit")
     public String editMenuForm(@PathVariable Long id, Model model) {
-        model.addAttribute("menu", menuService.getMenuById(id));
-        return "admin/menus/form";
+        MenuDTO menuDTO = menuService.getMenuById(id);
+        RestaurantDTO restaurant = restaurantService.getRestaurantById(menuDTO.getRestaurantId());
+        model.addAttribute("menu", menuDTO);
+        List<String> categories = List.of("한식", "중식", "일식", "양식", "아시안", "디저트", "음료");
+        model.addAttribute("categories", categories);
+        model.addAttribute("restaurant", restaurant);
+        return "admin/restaurant/menu-form";
     }
 
     // 메뉴 수정 처리

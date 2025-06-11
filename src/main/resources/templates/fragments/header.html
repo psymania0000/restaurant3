@@ -3,20 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <title>헤더</title>
+    <style>
+        .home-link {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #007bff !important;
+            text-decoration: none;
+        }
+        .home-link:hover {
+            color: #0056b3 !important;
+        }
+    </style>
 </head>
 <body>
     <header th:fragment="header">
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container">
-                <a class="navbar-brand" href="/">맛집 예약 시스템</a>
+                <a class="navbar-brand home-link" href="/">
+                    <i class="fas fa-home"></i> 맛집 예약 시스템
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="/">홈</a>
-                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/restaurants">맛집 목록</a>
                         </li>
@@ -37,11 +47,14 @@
                                 </span>
                             </li>
                             <li class="nav-item">
+                                <a class="nav-link" href="/mypage">마이페이지</a>
+                            </li>
+                            <li class="nav-item">
                                 <form th:action="@{/logout}" method="post" class="d-inline">
                                     <button type="submit" class="btn btn-link nav-link">로그아웃</button>
                                 </form>
                             </li>
-                            <li class="nav-item" th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+                            <li class="nav-item" th:if="${#authorization.expression('hasRole(''ADMIN'') or hasRole(''SUPER_ADMIN'')')}">
                                 <a class="nav-link" href="/admin">관리자 페이지</a>
                             </li>
                         </div>
