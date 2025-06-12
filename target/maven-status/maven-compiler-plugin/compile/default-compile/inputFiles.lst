@@ -8,6 +8,7 @@ C:\restaurant\src\main\java\com\restaurant\controller\api\MenuApiController.java
 C:\restaurant\src\main\java\com\restaurant\controller\LocationController.java
 C:\restaurant\src\main\java\com\restaurant\security\JwtTokenProvider.java
 C:\restaurant\src\main\java\com\restaurant\controller\admin\AdminDashboardController.java
+C:\restaurant\src\main\java\com\restaurant\service\NoticeService.java
 C:\restaurant\src\main\java\com\restaurant\service\UserService.java
 C:\restaurant\src\main\java\com\restaurant\service\ReservationService.java
 C:\restaurant\src\main\java\com\restaurant\controller\MyPageController.java
@@ -22,6 +23,7 @@ C:\restaurant\src\main\java\com\restaurant\security\CustomUserDetails.java
 C:\restaurant\src\main\java\com\restaurant\security\JwtAuthenticationFilter.java
 C:\restaurant\src\main\java\com\restaurant\controller\admin\AdminReservationController.java
 C:\restaurant\src\main\java\com\restaurant\entity\Menu.java
+C:\restaurant\src\main\java\com\restaurant\repository\NoticeRepository.java
 C:\restaurant\src\main\java\com\restaurant\controller\ErrorController.java
 C:\restaurant\src\main\java\com\restaurant\dto\UserDTO.java
 C:\restaurant\src\main\java\com\restaurant\dto\RestaurantDTO.java
@@ -34,6 +36,8 @@ C:\restaurant\src\main\java\com\restaurant\controller\admin\AdminReviewControlle
 C:\restaurant\src\main\java\com\restaurant\controller\admin\AdminMenuController.java
 C:\restaurant\src\main\java\com\restaurant\service\MenuService.java
 C:\restaurant\src\main\java\com\restaurant\service\PointService.java
+C:\restaurant\src\main\java\com\restaurant\entity\Notice.java
+C:\restaurant\src\main\java\com\restaurant\dto\NoticeDTO.java
 C:\restaurant\src\main\java\com\restaurant\service\FileStorageService.java
 C:\restaurant\src\main\java\com\restaurant\controller\AuthController.java
 C:\restaurant\src\main\java\com\restaurant\dto\LoginRequest.java
@@ -50,6 +54,7 @@ C:\restaurant\src\main\java\com\restaurant\service\RestaurantService.java
 C:\restaurant\src\main\java\com\restaurant\model\User.java
 C:\restaurant\src\main\java\com\restaurant\controller\RestaurantController.java
 C:\restaurant\src\main\java\com\restaurant\service\NotificationService.java
+C:\restaurant\src\main\java\com\restaurant\controller\NoticeController.java
 C:\restaurant\src\main\java\com\restaurant\controller\UserController.java
 C:\restaurant\src\main\java\com\restaurant\entity\MenuCategory.java
 C:\restaurant\src\main\java\com\restaurant\controller\ReviewController.java

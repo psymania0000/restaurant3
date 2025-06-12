@@ -1,9 +1,11 @@
 com\restaurant\controller\RestaurantController.class
+com\restaurant\service\NoticeService.class
 com\restaurant\security\CustomUserDetailsService.class
 com\restaurant\dto\LoginRequest.class
 com\restaurant\controller\ReservationController.class
 com\restaurant\service\NotificationService.class
 com\restaurant\config\ThymeleafConfig.class
+com\restaurant\controller\NoticeController.class
 com\restaurant\controller\ReviewController.class
 com\restaurant\controller\AuthController.class
 com\restaurant\security\CustomUserDetails.class
@@ -17,12 +19,14 @@ com\restaurant\model\Role.class
 com\restaurant\config\JpaConfig.class
 com\restaurant\controller\UserController.class
 com\restaurant\repository\MenuRepository.class
+com\restaurant\entity\Notice.class
 com\restaurant\entity\Menu.class
 com\restaurant\controller\admin\AdminRestaurantController.class
 com\restaurant\service\UserService.class
 com\restaurant\entity\MenuCategory.class
 com\restaurant\dto\MenuDTO$MenuDTOBuilder.class
 com\restaurant\dto\ReviewDTO$ReviewDTOBuilder.class
+com\restaurant\repository\NoticeRepository.class
 com\restaurant\controller\HomeController.class
 com\restaurant\repository\ReviewRepository.class
 com\restaurant\entity\Restaurant.class
@@ -43,6 +47,7 @@ com\restaurant\controller\LocationController.class
 com\restaurant\controller\admin\AdminReservationController.class
 com\restaurant\controller\RestaurantApiController.class
 com\restaurant\dto\RestaurantDTO.class
+com\restaurant\dto\NoticeDTO.class
 com\restaurant\dto\ReservationDTO.class
 com\restaurant\controller\api\ReservationApiController.class
 com\restaurant\repository\UserRepository.class
@@ -51,6 +56,7 @@ com\restaurant\entity\Reservation.class
 com\restaurant\service\MenuService.class
 com\restaurant\dto\SignupRequest.class
 com\restaurant\config\SecurityConfig.class
+com\restaurant\dto\NoticeDTO$NoticeDTOBuilder.class
 com\restaurant\model\UserRole.class
 com\restaurant\controller\admin\AdminMenuController.class
 com\restaurant\controller\NotificationController.class

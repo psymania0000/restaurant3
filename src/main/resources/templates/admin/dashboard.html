@@ -86,6 +86,24 @@
                     </div>
                 </div>
             </div>
+
+            <!-- 공지사항 관리 (모든 관리자) -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-megaphone"></i> 공지사항 관리
+                        </h5>
+                        <p class="card-text">등록된 공지사항: <span th:text="${noticeCount}">0</span>개</p>
+                        <div class="d-flex gap-2">
+                            <a href="/notices" class="btn btn-primary">공지사항 목록</a>
+                            <a href="/notices/new" class="btn btn-success">
+                                <i class="fas fa-plus"></i> 새 공지사항
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

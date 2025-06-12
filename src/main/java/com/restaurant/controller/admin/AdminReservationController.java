@@ -60,6 +60,42 @@ public class AdminReservationController {
         }
     }
 
+    @GetMapping("/{id}")
+    public String getReservationDetail(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+        try {
+            if (userDetails == null) {
+                redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
+                return "redirect:/login";
+            }
+
+            boolean isSuperAdmin = userDetails.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN"));
+
+            ReservationDTO reservation = reservationService.getReservationById(id);
+            
+            if (!isSuperAdmin) {
+                // Regular admin: check restaurant ownership
+                Long restaurantId = restaurantService.getRestaurantIdByEmail(userDetails.getUsername());
+                if (!reservation.getRestaurantId().equals(restaurantId)) {
+                    throw new EntityNotFoundException("해당 예약을 찾을 수 없습니다.");
+                }
+            }
+
+            model.addAttribute("reservation", reservation);
+            return "admin/reservations/detail";
+        } catch (EntityNotFoundException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/admin/reservations";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "예약 정보를 불러오는 중 오류가 발생했습니다: " + e.getMessage());
+            return "redirect:/admin/reservations";
+        }
+    }
+
     @PostMapping("/{id}/confirm")
     public String confirmReservation(
             @PathVariable Long id,

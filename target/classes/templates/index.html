@@ -64,6 +64,37 @@
         </div>
     </section>
 
+    <!-- Recent Notices Section -->
+    <section id="notices" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-4">최근 공지사항</h2>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="list-group">
+                        <a th:each="notice : ${recentNotices}" 
+                           th:href="@{/notices/{id}(id=${notice.id})}"
+                           class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">
+                                    <span th:if="${notice.important}" class="badge bg-danger me-2">중요</span>
+                                    <span th:text="${notice.title}">공지사항 제목</span>
+                                </h5>
+                                <small class="text-muted" th:text="${#temporals.format(notice.createdAt, 'yyyy-MM-dd')}">작성일</small>
+                            </div>
+                            <p class="mb-1" th:text="${#strings.abbreviate(notice.content, 100)}">공지사항 내용</p>
+                        </a>
+                        <div th:if="${#lists.isEmpty(recentNotices)}" class="text-center py-3">
+                            <p class="text-muted">최근 공지사항이 없습니다.</p>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a th:href="@{/notices}" class="btn btn-outline-primary">전체 공지사항 보기</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Menu Section -->
     <section id="menu" class="py-5">
         <div class="container">

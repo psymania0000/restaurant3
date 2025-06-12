@@ -164,6 +164,8 @@ public class ReservationService {
                 .restaurantName(reservation.getRestaurant().getName())
                 .userId(reservation.getUser().getId())
                 .userName(reservation.getUser().getUsername())
+                .userEmail(reservation.getUser().getEmail())
+                .userPhone(reservation.getUser().getPhone())
                 .reservationTime(reservation.getReservationTime())
                 .numberOfPeople(reservation.getNumberOfPeople())
                 .status(reservation.getStatus())

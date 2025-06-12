@@ -8,7 +8,13 @@
 </head>
 <body>
     <div class="container mt-5">
-        <h2>Restaurant List</h2>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Restaurant List</h2>
+            <div>
+                <a th:href="@{/}" class="btn btn-outline-primary me-2">메인 페이지</a>
+                <a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary">관리자 대시보드</a>
+            </div>
+        </div>
 
         <a th:href="@{/admin/restaurants/new}" class="btn btn-primary mb-3">Add New Restaurant</a>
 

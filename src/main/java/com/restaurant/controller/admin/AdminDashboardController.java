@@ -5,6 +5,7 @@ import com.restaurant.service.UserService;
 import com.restaurant.service.MenuService;
 import com.restaurant.service.ReservationService;
 import com.restaurant.service.ReviewService;
+import com.restaurant.service.NoticeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,6 +33,7 @@ public class AdminDashboardController {
     private final MenuService menuService;
     private final ReservationService reservationService;
     private final ReviewService reviewService;
+    private final NoticeService noticeService;
 
     @GetMapping
     public String redirectToDashboard() {
@@ -72,6 +74,7 @@ public class AdminDashboardController {
                 model.addAttribute("menuCount", menuService.getMenuCount());
                 model.addAttribute("reservationCount", reservationService.getReservationCount());
                 model.addAttribute("reviewCount", reviewService.getReviewCount());
+                model.addAttribute("noticeCount", noticeService.getNoticeCount());
             } catch (Exception e) {
                 logger.error("Error while fetching statistics: {}", e.getMessage());
                 model.addAttribute("errorMessage", "통계 정보를 불러오는 중 오류가 발생했습니다.");
@@ -79,8 +82,8 @@ public class AdminDashboardController {
 
             return "admin/dashboard";
         } catch (Exception e) {
-            logger.error("Unexpected error in dashboard: {}", e.getMessage(), e);
-            model.addAttribute("errorMessage", "대시보드 로딩 중 오류가 발생했습니다.");
+            logger.error("Error in dashboard: {}", e.getMessage());
+            model.addAttribute("errorMessage", "대시보드를 불러오는 중 오류가 발생했습니다.");
             return "admin/dashboard";
         }
     }

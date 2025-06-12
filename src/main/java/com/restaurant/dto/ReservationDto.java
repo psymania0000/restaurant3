@@ -22,6 +22,8 @@ public class ReservationDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String userName;
+    private String userEmail;
+    private String userPhone;
     private String restaurantName;
     private Integer pointsToUse;
     private String request;
