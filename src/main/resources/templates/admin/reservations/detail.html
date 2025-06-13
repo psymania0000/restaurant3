@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예약 상세 - 관리자 페이지</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+    
+    <div class="container mt-4">
+        <div th:replace="~{fragments/admin-nav :: admin-nav}"></div>
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>예약 상세 정보</h2>
+            <div>
+                <a th:href="@{/admin/reservations}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> 목록으로
+                </a>
+            </div>
+        </div>
+
+        <!-- 알림 메시지 -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- 예약 상세 정보 -->
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="card-title mb-4">예약 정보</h5>
+                        <table class="table">
+                            <tr>
+                                <th style="width: 150px;">예약 번호</th>
+                                <td th:text="${reservation.id}"></td>
+                            </tr>
+                            <tr>
+                                <th>식당명</th>
+                                <td th:text="${reservation.restaurantName}"></td>
+                            </tr>
+                            <tr>
+                                <th>예약자</th>
+                                <td th:text="${reservation.userName}"></td>
+                            </tr>
+                            <tr>
+                                <th>예약 시간</th>
+                                <td th:text="${#temporals.format(reservation.reservationTime, 'yyyy-MM-dd HH:mm')}"></td>
+                            </tr>
+                            <tr>
+                                <th>인원</th>
+                                <td th:text="${reservation.numberOfPeople} + '명'"></td>
+                            </tr>
+                            <tr>
+                                <th>상태</th>
+                                <td>
+                                    <span th:class="${'badge ' + 
+                                        (reservation.status == T(com.restaurant.model.ReservationStatus).PENDING ? 'bg-warning' : 
+                                        (reservation.status == T(com.restaurant.model.ReservationStatus).APPROVED ? 'bg-success' : 
+                                        (reservation.status == T(com.restaurant.model.ReservationStatus).CANCELLED ? 'bg-danger' : 'bg-secondary')))}"
+                                        th:text="${reservation.status}">
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>특별 요청</th>
+                                <td th:text="${reservation.specialRequests}"></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="card-title mb-4">예약자 정보</h5>
+                        <table class="table">
+                            <tr>
+                                <th style="width: 150px;">이름</th>
+                                <td th:text="${reservation.userName}"></td>
+                            </tr>
+                            <tr>
+                                <th>이메일</th>
+                                <td th:text="${reservation.userEmail}"></td>
+                            </tr>
+                            <tr>
+                                <th>전화번호</th>
+                                <td th:text="${reservation.userPhone}"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 예약 상태 변경 버튼 -->
+                <div class="mt-4">
+                    <div class="btn-group" role="group">
+                        <form th:if="${reservation.status == T(com.restaurant.model.ReservationStatus).PENDING}"
+                              th:action="@{/admin/reservations/{id}/confirm(id=${reservation.id})}"
+                              method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> 승인
+                            </button>
+                        </form>
+                        <form th:if="${reservation.status == T(com.restaurant.model.ReservationStatus).PENDING}"
+                              th:action="@{/admin/reservations/{id}/cancel(id=${reservation.id})}"
+                              method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-x-circle"></i> 취소
+                            </button>
+                        </form>
+                        <form th:if="${reservation.status == T(com.restaurant.model.ReservationStatus).APPROVED}"
+                              th:action="@{/admin/reservations/{id}/status(id=${reservation.id})}"
+                              method="post" style="display: inline;">
+                            <input type="hidden" name="status" value="COMPLETED">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check2-all"></i> 완료
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

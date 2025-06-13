@@ -7,6 +7,7 @@ import com.restaurant.entity.MenuCategory;
 import com.restaurant.service.RestaurantService;
 import com.restaurant.service.ReviewService;
 import com.restaurant.service.MenuService;
+import com.restaurant.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,7 +18,6 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import jakarta.annotation.PostConstruct;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -117,7 +117,7 @@ public class AdminRestaurantController {
     public String createRestaurant(
             @ModelAttribute RestaurantDTO restaurantDTO,
             @RequestParam(value = "image", required = false) MultipartFile image,
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             RedirectAttributes redirectAttributes) {
         try {
             if (restaurantDTO.getName() == null || restaurantDTO.getName().trim().isEmpty()) {
@@ -133,10 +133,8 @@ public class AdminRestaurantController {
                 throw new IllegalArgumentException("카테고리는 필수 입력 항목입니다.");
             }
 
-            // 현재 로그인한 관리자의 이메일을 email로 설정
-            restaurantDTO.setEmail(userDetails.getUsername());
-
-            RestaurantDTO createdRestaurant = restaurantService.createRestaurant(restaurantDTO, image, userDetails.getUsername());
+            // 슈퍼 어드민은 모든 식당을 관리할 수 있음
+            RestaurantDTO createdRestaurant = restaurantService.createRestaurant(restaurantDTO, image, userDetails.getUser().getEmail());
             redirectAttributes.addFlashAttribute("successMessage", "식당이 성공적으로 등록되었습니다.");
             return "redirect:/admin/restaurants";
         } catch (Exception e) {
@@ -149,23 +147,37 @@ public class AdminRestaurantController {
     // 식당 수정 폼
     @GetMapping("/{id}/edit")
     public String editRestaurantForm(@PathVariable Long id, Model model) {
-        model.addAttribute("restaurant", restaurantService.getRestaurantById(id));
+        RestaurantDTO restaurant = restaurantService.getRestaurantById(id);
+        model.addAttribute("restaurant", restaurant);
         return "admin/restaurant/form";
     }
 
     // 식당 수정 처리
     @PostMapping("/{id}")
-    public String updateRestaurant(@PathVariable Long id,
-                                 @ModelAttribute RestaurantDTO restaurantDTO,
-                                 @RequestParam(value = "image", required = false) MultipartFile image) {
-        restaurantService.updateRestaurant(id, restaurantDTO, image);
-        return "redirect:/admin/restaurants";
+    public String updateRestaurant(
+            @PathVariable Long id,
+            @ModelAttribute RestaurantDTO restaurantDTO,
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            RedirectAttributes redirectAttributes) {
+        try {
+            RestaurantDTO updatedRestaurant = restaurantService.updateRestaurant(id, restaurantDTO, image);
+            redirectAttributes.addFlashAttribute("successMessage", "식당 정보가 성공적으로 수정되었습니다.");
+            return "redirect:/admin/restaurants";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "식당 수정 중 오류가 발생했습니다: " + e.getMessage());
+            return "redirect:/admin/restaurants/" + id + "/edit";
+        }
     }
 
     // 식당 삭제 처리
-    @DeleteMapping("/{id}/delete")
-    public String deleteRestaurant(@PathVariable Long id) {
-        restaurantService.deleteRestaurant(id);
+    @PostMapping("/{id}/delete")
+    public String deleteRestaurant(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            restaurantService.deleteRestaurant(id);
+            redirectAttributes.addFlashAttribute("successMessage", "식당이 성공적으로 삭제되었습니다.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "식당 삭제 중 오류가 발생했습니다: " + e.getMessage());
+        }
         return "redirect:/admin/restaurants";
     }
 
@@ -203,11 +215,12 @@ public class AdminRestaurantController {
 
     // 후기 삭제 처리 (수정)
     @PostMapping("/{restaurantId}/reviews/{reviewId}/delete")
-    public String deleteReview(@PathVariable Long restaurantId, 
-                             @PathVariable Long reviewId,
-                             @AuthenticationPrincipal UserDetails userDetails,
-                             RedirectAttributes redirectAttributes) {
-        reviewService.deleteReview(reviewId, userDetails.getUsername(), userDetails.getAuthorities());
+    public String deleteReview(
+            @PathVariable Long restaurantId, 
+            @PathVariable Long reviewId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            RedirectAttributes redirectAttributes) {
+        reviewService.deleteReview(reviewId, userDetails.getUser().getEmail(), userDetails.getAuthorities());
         redirectAttributes.addFlashAttribute("message", "리뷰가 삭제되었습니다.");
         return "redirect:/admin/restaurants/" + restaurantId;
     }

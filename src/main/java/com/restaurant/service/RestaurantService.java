@@ -20,6 +20,7 @@ import java.nio.file.StandardCopyOption;
 import com.restaurant.dto.MenuDTO;
 import com.restaurant.repository.UserRepository;
 import com.restaurant.entity.User;
+import com.restaurant.model.UserRole;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,28 +57,31 @@ public class RestaurantService {
         restaurant.setOpen(true);
         restaurant.setReservationInterval(restaurantDTO.getReservationInterval() != null ? restaurantDTO.getReservationInterval() : 30);
 
-        // 관리자 설정
-        if (managerEmail != null) {
-            User manager = userRepository.findByEmail(managerEmail)
-                    .orElseThrow(() -> new EntityNotFoundException("관리자를 찾을 수 없습니다."));
+        // 관리자 설정 (일반 관리자인 경우에만)
+        User manager = userRepository.findByEmail(managerEmail)
+                .orElseThrow(() -> new EntityNotFoundException("관리자를 찾을 수 없습니다."));
+        if (manager.getRole() != UserRole.SUPER_ADMIN) {
             restaurant.setManager(manager);
+            // 일반 관리자에게 해당 식당에 대한 모든 권한 부여
+            manager.getManagedRestaurants().add(restaurant);
         }
 
+        // 이미지 처리
         if (image != null && !image.isEmpty()) {
             try {
-                String imageUrl = saveImage(image);
-                restaurant.setImageUrl(imageUrl);
-            } catch (Exception e) {
-                throw new RuntimeException("이미지 업로드 중 오류가 발생했습니다: " + e.getMessage());
+                String originalFilename = image.getOriginalFilename();
+                String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                String uniqueFileName = UUID.randomUUID().toString() + fileExtension;
+                Path filePath = Paths.get(uploadDir, uniqueFileName);
+                Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                restaurant.setImageUrl("/images/restaurants/" + uniqueFileName);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to upload restaurant image", e);
             }
         }
 
-        try {
-            Restaurant savedRestaurant = restaurantRepository.save(restaurant);
-            return convertToDTO(savedRestaurant);
-        } catch (Exception e) {
-            throw new RuntimeException("식당 등록 중 오류가 발생했습니다: " + e.getMessage());
-        }
+        Restaurant savedRestaurant = restaurantRepository.save(restaurant);
+        return convertToDTO(savedRestaurant);
     }
 
     @Transactional

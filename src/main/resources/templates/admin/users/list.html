@@ -15,9 +15,21 @@
     <div class="container mt-4">
         <div th:replace="~{fragments/admin-nav :: admin-nav}"></div>
         
+        <!-- 알림 메시지 -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2>관리자 목록</h2>
-            <a href="/admin/users/new" class="btn btn-success">관리자 추가</a>
+            <a href="/admin/users/new" class="btn btn-success">
+                <i class="fas fa-plus"></i> 관리자 추가
+            </a>
         </div>
 
         <table class="table table-striped">
@@ -30,7 +42,7 @@
                     <th>Role</th>
                     <th>Points</th>
                     <th>Created At</th>
-                    <!-- <th>Actions</th> -->
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -42,11 +54,19 @@
                     <td th:text="${user.role}">ROLE_USER</td>
                     <td th:text="${user.points}">0</td>
                     <td th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm')}">2023-01-01 10:00</td>
-                    <!-- <td>
-                        <a href="#" class="btn btn-info btn-sm">View</a>
-                        <a href="#" class="btn btn-warning btn-sm">Edit</a>
-                        <a href="#" class="btn btn-danger btn-sm">Delete</a>
-                    </td> -->
+                    <td>
+                        <div class="btn-group" role="group">
+                            <a th:href="@{/admin/users/{id}/edit(id=${user.id})}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i> 수정
+                            </a>
+                            <form th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post" style="display: inline;">
+                                <button type="submit" class="btn btn-danger btn-sm" 
+                                        onclick="return confirm('정말로 이 사용자를 삭제하시겠습니까?');">
+                                    <i class="fas fa-trash"></i> 삭제
+                                </button>
+                            </form>
+                        </div>
+                    </td>
                 </tr>
             </tbody>
         </table>

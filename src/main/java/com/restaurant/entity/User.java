@@ -8,6 +8,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import lombok.EqualsAndHashCode;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -75,6 +77,7 @@ public class User {
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "restaurant_id")
     )
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Set<Restaurant> managedRestaurants = new HashSet<>();
 
     @PrePersist

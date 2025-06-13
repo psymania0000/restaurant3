@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공지사항</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>공지사항</h2>
+            <a href="/" class="btn btn-outline-primary">
+                <i class="fas fa-home"></i> 메인으로
+            </a>
+        </div>
+
+        <!-- 알림 메시지 -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- 검색 폼 -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <form th:action="@{/notices}" method="get" class="d-flex">
+                    <input type="text" name="keyword" th:value="${keyword}" class="form-control me-2" placeholder="검색어를 입력하세요">
+                    <button type="submit" class="btn btn-primary">검색</button>
+                </form>
+            </div>
+            <div class="col-md-6 text-end">
+                <a th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''SUPER_ADMIN'')')}"
+                   th:href="@{/notices/new}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> 새 공지사항
+                </a>
+            </div>
+        </div>
+
+        <!-- 공지사항 목록 -->
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 10%">번호</th>
+                        <th style="width: 60%">제목</th>
+                        <th style="width: 15%">작성자</th>
+                        <th style="width: 15%">작성일</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${notices.empty}">
+                        <td colspan="4" class="text-center">등록된 공지사항이 없습니다.</td>
+                    </tr>
+                    <tr th:each="notice : ${notices}">
+                        <td th:text="${notice.id}"></td>
+                        <td>
+                            <a th:href="@{/notices/{id}(id=${notice.id})}" class="text-decoration-none">
+                                <span th:if="${notice.important}" class="badge bg-danger me-2">중요</span>
+                                <span th:text="${notice.title}"></span>
+                            </a>
+                        </td>
+                        <td th:text="${notice.createdByName}"></td>
+                        <td th:text="${#temporals.format(notice.createdAt, 'yyyy-MM-dd')}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 페이지네이션 -->
+        <nav th:if="${notices.totalPages > 1}" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${notices.first} ? 'disabled'">
+                    <a class="page-link" th:href="@{/notices(page=${notices.number - 1}, size=${notices.size}, keyword=${keyword})}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, notices.totalPages - 1)}"
+                    th:classappend="${i == notices.number} ? 'active'">
+                    <a class="page-link" th:href="@{/notices(page=${i}, size=${notices.size}, keyword=${keyword})}"
+                       th:text="${i + 1}"></a>
+                </li>
+                <li class="page-item" th:classappend="${notices.last} ? 'disabled'">
+                    <a class="page-link" th:href="@{/notices(page=${notices.number + 1}, size=${notices.size}, keyword=${keyword})}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

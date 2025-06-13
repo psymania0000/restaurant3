@@ -8,6 +8,7 @@ import com.restaurant.entity.User;
 import com.restaurant.model.UserRole;
 import com.restaurant.repository.UserRepository;
 import com.restaurant.repository.RestaurantRepository;
+import com.restaurant.repository.NoticeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,6 +30,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RestaurantRepository restaurantRepository;
+    private final NoticeRepository noticeRepository;
 
     @PostConstruct
     public void init() {
@@ -168,10 +170,14 @@ public class UserService {
 
     @Transactional
     public void deleteUser(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new EntityNotFoundException("User not found with id: " + id);
-        }
-        userRepository.deleteById(id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
+        
+        // 연관된 공지사항 삭제
+        noticeRepository.deleteByCreatedBy(user);
+        
+        // 사용자 삭제
+        userRepository.delete(user);
     }
 
     @Transactional

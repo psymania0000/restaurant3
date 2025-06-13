@@ -82,15 +82,15 @@ public class AdminUserController {
     }
 
     // 사용자 삭제 처리
-    @DeleteMapping("/{id}")
+    @PostMapping("/{id}/delete")
     public String deleteUser(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             userService.deleteUser(id);
-            redirectAttributes.addFlashAttribute("successMessage", "User deleted successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "사용자가 삭제되었습니다.");
         } catch (EntityNotFoundException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error deleting user: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "사용자 삭제 중 오류가 발생했습니다: " + e.getMessage());
         }
         return "redirect:/admin/users";
     }

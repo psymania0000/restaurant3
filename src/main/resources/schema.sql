@@ -42,4 +42,14 @@ CREATE TABLE IF NOT EXISTS persistent_logins (
     series VARCHAR(64) PRIMARY KEY,
     token VARCHAR(64) NOT NULL,
     last_used TIMESTAMP NOT NULL
-); 
+);
+
+-- notices 테이블 수정
+ALTER TABLE notices DROP FOREIGN KEY FKdcx7eafm2avpoafgx6otyvd79;
+ALTER TABLE notices ADD CONSTRAINT FK_notices_users FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE;
+
+-- user_restaurant 테이블 수정
+ALTER TABLE user_restaurant DROP FOREIGN KEY IF EXISTS FK_user_restaurant_user;
+ALTER TABLE user_restaurant DROP FOREIGN KEY IF EXISTS FK_user_restaurant_restaurant;
+ALTER TABLE user_restaurant ADD CONSTRAINT FK_user_restaurant_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+ALTER TABLE user_restaurant ADD CONSTRAINT FK_user_restaurant_restaurant FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE; 
